@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jacozinho do Senhor - Escalas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+    <style>
+        /* --- PALETA DE CORES (MARROM / BEGE) --- */
+        :root {
+            --cor-primaria: #5D4037;    /* Marrom Café */
+            --cor-secundaria: #8D6E63;  /* Marrom Claro */
+            --cor-fundo: #EFEBE9;       /* Begezinho */
+            --cor-texto: #3E2723;       /* Marrom Escuro */
+            --cor-branco: #FFFFFF;
+            --cor-sucesso: #2E7D32;     /* Verde Planta */
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Roboto', sans-serif; background-color: var(--cor-fundo); color: var(--cor-texto); display: flex; justify-content: center; min-height: 100vh; padding-bottom: 50px;}
+
+        .app-container { 
+            background: var(--cor-branco); 
+            width: 100%; 
+            max-width: 450px; 
+            box-shadow: 0 4px 20px rgba(93, 64, 55, 0.15);
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+        }
+
+        /* --- CABEÇALHO --- */
+        header { 
+            background: white; 
+            padding: 20px; 
+            text-align: center; 
+            border-bottom: 4px solid var(--cor-primaria);
+        }
+        .logo-img {
+            max-width: 180px; 
+            display: block;
+            margin: 0 auto 10px auto;
+        }
+        header h1 { 
+            font-size: 1.4rem; 
+            font-weight: 700; 
+            color: var(--cor-primaria);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        main { padding: 20px; flex-grow: 1; }
+
+        /* --- INPUTS E FORMULÁRIOS --- */
+        label { font-size: 0.8rem; color: var(--cor-secundaria); font-weight: 700; margin-bottom: 5px; display: block; text-transform: uppercase; margin-top: 15px;}
+        input[type="text"], input[type="date"], select { 
+            width: 100%; padding: 12px; 
+            border: 2px solid #D7CCC8; 
+            border-radius: 8px; 
+            background: #fff; 
+            font-size: 1rem; 
+            color: var(--cor-texto);
+        }
+        input:focus, select:focus { outline: none; border-color: var(--cor-primaria); }
+
+        /* --- CHECKBOX LIST --- */
+        .checklist-container {
+            border: 2px solid #D7CCC8;
+            border-radius: 8px;
+            max-height: 250px;
+            overflow-y: auto;
+            padding: 10px;
+            background: #FAFAFA;
+        }
+        .checklist-item { display: flex; align-items: center; padding: 8px; border-bottom: 1px solid #eee; }
+        .checklist-item input { margin-right: 10px; accent-color: var(--cor-primaria); width: 18px; height: 18px; cursor: pointer; }
+        .checklist-item span { cursor: pointer; flex-grow: 1; }
+
+        /* --- BOTÕES --- */
+        .btn-salvar { 
+            width: 100%; padding: 15px; 
+            background-color: var(--cor-primaria); 
+            color: white; border: none; border-radius: 12px; 
+            font-weight: 700; cursor: pointer; margin-top: 20px; font-size: 1rem; 
+            box-shadow: 0 4px 10px rgba(93, 64, 55, 0.3);
+            transition: 0.2s;
+        }
+        .btn-salvar:hover { background-color: #3E2723; transform: translateY(-2px); }
+
+        .filtro-rapido { display: flex; gap: 10px; margin-bottom: 5px; }
+        .btn-mini { padding: 6px 12px; font-size: 0.8rem; background: #D7CCC8; color: var(--cor-texto); border: none; border-radius: 4px; cursor: pointer; font-weight: bold;}
+
+        /* --- ÁREA DE CADASTRO NOVO (MODAL) --- */
+        #areaCadastro {
+            display: none; 
+            background: #FFF8E1; 
+            padding: 15px;
+            border: 2px dashed var(--cor-secundaria);
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .btn-novo-servo {
+            background: transparent; border: 2px solid var(--cor-primaria);
+            color: var(--cor-primaria); padding: 8px; width: 100%;
+            border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px;
+        }
+
+        /* --- ÁREA DE IMPRESSÃO (IMAGEM) --- */
+        #areaParaImagem {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 30px;
+            border: 1px solid #eee;
+        }
+        .cabecalho-imagem {
+            text-align: center;
+            border-bottom: 2px solid var(--cor-primaria);
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            display: none; /* Só aparece na foto */
+        }
+        
+        .card-escala { 
+            background: #F5F5F5; border-radius: 8px; padding: 10px; 
+            margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; 
+            border-left: 5px solid var(--cor-primaria);
+        }
+        .card-nome { font-weight: 700; font-size: 0.95rem; color: var(--cor-primaria); }
+        .card-min { font-size: 0.85rem; color: #757575; }
+        .btn-delete { background:none; border:none; cursor:pointer; font-size:1.1rem; }
+
+        .btn-compartilhar {
+            background-color: var(--cor-sucesso);
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <header>
+            <img src="logo.png" alt="Jacozinho do Senhor" class="logo-img">
+            <h1>Escala dos Servos</h1>
+        </header>
+
+        <main>
+            <button onclick="toggleCadastro()" class="btn-novo-servo">➕ Cadastrar Novo Servo</button>
+            
+            <div id="areaCadastro">
+                <h3 style="color:var(--cor-primaria); margin-bottom:10px;">Novo Cadastro</h3>
+                <input type="text" id="novoNome" placeholder="Nome Completo (Curto)">
+                <div style="height:5px"></div>
+                <select id="novoMinisterio">
+                    <option value="">Selecione o Ministério...</option>
+                    <option value="Música">Música</option>
+                    <option value="Comunicação">Comunicação</option>
+                    <option value="Acolhida">Acolhida</option>
+                    <option value="Pregação">Pregação</option>
+                    <option value="Intercessão">Intercessão</option>
+                    <option value="Crianças">Crianças</option>
+                    <option value="Coordenação">Coordenação</option>
+                    <option value="Promoção Humana">Promoção Humana</option>
+                    <option value="Jovem">Jovem</option>
+                    <option value="Formação">Formação</option>
+                    <option value="Famílias">Famílias</option>
+                </select>
+                <button onclick="salvarNovoServo()" class="btn-salvar" style="margin-top:10px; background:var(--cor-secundaria)">Salvar Cadastro</button>
+            </div>
+
+            <hr style="margin: 20px 0; border:0; border-top:1px solid #ddd">
+
+            <form id="formEscala">
+                <label>🖊️ Responsável:</label>
+                <input type="text" id="inputResponsavel" placeholder="Seu nome..." required>
+
+                <label>📅 Data:</label>
+                <input type="date" id="dataEscala" required onchange="carregarEscalaDoDia()">
+
+                <label>🛠️ Filtrar Função:</label>
+                <select id="selectMinisterio" required onchange="filtrarListaPorMinisterio()">
+                    <option value="">Selecione...</option>
+                    <option value="Geral">Todos (Mostrar Tudo)</option>
+                    <option value="Música">Música</option>
+                    <option value="Comunicação">Comunicação</option>
+                    <option value="Acolhida">Acolhida</option>
+                    <option value="Pregação">Pregação</option>
+                    <option value="Intercessão">Intercessão</option>
+                    <option value="Crianças">Crianças</option>
+                    <option value="Coordenação">Coordenação</option>
+                    <option value="Promoção Humana">Promoção Humana</option>
+                    <option value="Jovem">Jovem</option>
+                    <option value="Formação">Formação</option>
+                    <option value="Famílias">Famílias</option>
+                </select>
+
+                <label>👥 Selecione:</label>
+                <div class="filtro-rapido">
+                    <button type="button" class="btn-mini" onclick="marcarTodos(true)">Todos</button>
+                    <button type="button" class="btn-mini" onclick="marcarTodos(false)">Nenhum</button>
+                </div>
+                
+                <div class="checklist-container" id="containerChecklist">
+                    <p style="text-align:center; color:#999; padding:20px;">Selecione uma função acima.</p>
+                </div>
+
+                <button type="submit" class="btn-salvar">Confirmar Escala</button>
+            </form>
+
+            <div id="areaParaImagem">
+                <div class="cabecalho-imagem" style="display:block; text-align:center; margin-bottom:15px;">
+                    <h3 style="color:var(--cor-primaria)">ESCALA DO DIA</h3>
+                    <h4 id="dataTitulo" style="color:#666">--/--/----</h4>
+                </div>
+                <div id="listaEscalados"></div>
+            </div>
+
+            <button onclick="gerarImagem()" class="btn-salvar btn-compartilhar">📸 Baixar Imagem para WhatsApp</button>
+        </main>
+    </div>
+
+    <script>
+        let todosServos = []; 
+
+        // 1. CARREGAR DADOS INICIAIS
+        async function carregarDadosIniciais() {
+            try {
+                const res = await fetch('/servos');
+                todosServos = await res.json();
+            } catch (e) { console.error(e); }
+        }
+
+        // 2. MOSTRAR/ESCONDER CADASTRO
+        function toggleCadastro() {
+            const area = document.getElementById('areaCadastro');
+            area.style.display = area.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // 3. SALVAR NOVO SERVO
+        async function salvarNovoServo() {
+            const nome = document.getElementById('novoNome').value;
+            const min = document.getElementById('novoMinisterio').value;
+
+            if(!nome || !min) { alert("Preencha nome e ministério!"); return; }
+
+            const btn = document.querySelector('#areaCadastro button');
+            const textoOriginal = btn.innerText;
+            btn.innerText = "Salvando...";
+
+            try {
+                const res = await fetch('/servos', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ nome: nome, ministerio: min })
+                });
+
+                if(res.ok) {
+                    alert("✅ Servo cadastrado!");
+                    document.getElementById('novoNome').value = "";
+                    toggleCadastro();
+                    carregarDadosIniciais(); // Atualiza a memória
+                } else {
+                    alert("Erro ao salvar.");
+                }
+            } catch (e) { alert("Erro de conexão"); }
+            btn.innerText = textoOriginal;
+        }
+
+        // 4. FILTRAR LISTA
+        function filtrarListaPorMinisterio() {
+            const ministerio = document.getElementById('selectMinisterio').value;
+            const container = document.getElementById('containerChecklist');
+            
+            if (!ministerio) { container.innerHTML = "<p style='padding:10px; text-align:center'>Selecione...</p>"; return; }
+
+            container.innerHTML = ""; 
+            const filtrados = todosServos.filter(servo => {
+                if (ministerio === "Geral") return true; 
+                return servo.ministerio && servo.ministerio.includes(ministerio);
+            });
+
+            if (filtrados.length === 0) {
+                container.innerHTML = "<p style='padding:10px; color:red'>Ninguém encontrado.</p>";
+                return;
+            }
+
+            filtrados.forEach(servo => {
+                const div = document.createElement('div');
+                div.className = 'checklist-item';
+                div.innerHTML = `
+                    <label style="display:flex; align-items:center; width:100%; margin:0; cursor:pointer">
+                        <input type="checkbox" value="${servo.id}" class="chk-servo">
+                        <span>${servo.nome}</span>
+                    </label>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function marcarTodos(estado) {
+            document.querySelectorAll('.chk-servo').forEach(chk => chk.checked = estado);
+        }
+
+        // 5. SALVAR ESCALA (MÚLTIPLA)
+        document.getElementById('formEscala').onsubmit = async (e) => {
+            e.preventDefault();
+            const responsavel = document.getElementById('inputResponsavel').value;
+            const data = document.getElementById('dataEscala').value;
+            const ministerio = document.getElementById('selectMinisterio').value;
+            const checks = document.querySelectorAll('.chk-servo:checked');
+            const ids = Array.from(checks).map(chk => chk.value);
+
+            if (ids.length === 0) { alert("Selecione alguém!"); return; }
+
+            try {
+                const res = await fetch('/escalar-multiplo', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ servo_ids: ids, data, ministerio_nome: ministerio, responsavel })
+                });
+                const json = await res.json();
+                alert(json.mensagem);
+                carregarEscalaDoDia();
+                marcarTodos(false);
+            } catch (erro) { alert("Erro ao salvar."); }
+        };
+
+        // 6. CARREGAR ESCALA E EXIBIR
+        async function carregarEscalaDoDia() {
+            const data = document.getElementById('dataEscala').value;
+            if(!data) return;
+            
+            // Atualiza data na imagem
+            const dataFormatada = data.split('-').reverse().join('/');
+            document.getElementById('dataTitulo').innerText = dataFormatada;
+
+            const div = document.getElementById('listaEscalados');
+            div.innerHTML = "Carregando...";
+            
+            try {
+                const res = await fetch(`/escalas/${data}`);
+                const lista = await res.json();
+                div.innerHTML = "";
+                
+                if(lista.length === 0) { div.innerHTML = "<p style='text-align:center;color:#999'>Ninguém escalado ainda.</p>"; return; }
+
+                lista.forEach(item => {
+                    div.innerHTML += `
+                        <div class="card-escala">
+                            <div>
+                                <div class="card-nome">${item.servos?.nome}</div>
+                                <div class="card-min">${item.ministerio_nome}</div>
+                            </div>
+                            <button class="btn-delete" onclick="deletar(${item.id})">❌</button>
+                        </div>`;
+                });
+            } catch(e) { div.innerHTML = "Erro ao carregar."; }
+        }
+
+        // 7. DELETAR (COM SENHA)
+        async function deletar(id) {
+            const senha = prompt("🔒 Senha do Coordenador:");
+            if(!senha) return;
+            
+            try {
+                const res = await fetch(`/escalas/${id}`, {
+                    method: 'DELETE', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ senha, responsavel: document.getElementById('inputResponsavel').value })
+                });
+                
+                if(res.ok) carregarEscalaDoDia();
+                else alert("Senha incorreta ou erro.");
+            } catch(e) { alert("Erro de conexão"); }
+        }
+
+        // 8. GERAR IMAGEM JPG
+        function gerarImagem() {
+            const area = document.getElementById('areaParaImagem');
+            
+            // Esconde os "X" de deletar para a foto ficar bonita
+            const btns = document.querySelectorAll('.btn-delete');
+            btns.forEach(b => b.style.display = 'none');
+
+            // Mostra o cabeçalho (Escala do dia)
+            document.querySelector('.cabecalho-imagem').style.display = 'block';
+
+            html2canvas(area).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'escala_jacozinho.jpg';
+                link.href = canvas.toDataURL("image/jpeg");
+                link.click();
+
+                // Restaura o visual original
+                btns.forEach(b => b.style.display = 'block');
+                document.querySelector('.cabecalho-imagem').style.display = 'none';
+            });
+        }
+
+        window.onload = carregarDadosIniciais;
+    </script>
+</body>
+</html>

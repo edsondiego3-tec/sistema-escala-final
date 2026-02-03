@@ -1,0 +1,17 @@
+{
+  "name": "sistema-escala-jacozinho",
+  "version": "1.0.0",
+  "description": "Sistema de escalas para Grupo de Oração",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "@supabase/supabase-js": "^2.39.3"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}

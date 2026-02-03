@@ -227,7 +227,7 @@
         // 1. CARREGAR DADOS INICIAIS
         async function carregarDadosIniciais() {
             try {
-                const res = await fetch('/servos');
+                const res = await fetch('/servos'); // Caminho relativo
                 todosServos = await res.json();
             } catch (e) { console.error(e); }
         }
@@ -303,7 +303,7 @@
             document.querySelectorAll('.chk-servo').forEach(chk => chk.checked = estado);
         }
 
-        // 5. SALVAR ESCALA (MÚLTIPLA)
+        // 5. SALVAR ESCALA (COM SENHA OBRIGATÓRIA)
         document.getElementById('formEscala').onsubmit = async (e) => {
             e.preventDefault();
             const responsavel = document.getElementById('inputResponsavel').value;
@@ -314,17 +314,29 @@
 
             if (ids.length === 0) { alert("Selecione alguém!"); return; }
 
+            // PERGUNTA A SENHA
+            const senha = prompt("🔒 Digite a senha do Coordenador para salvar:");
+            if (!senha) return;
+
             try {
                 const res = await fetch('/escalar-multiplo', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ servo_ids: ids, data, ministerio_nome: ministerio, responsavel })
+                    // Envia a senha junto no JSON
+                    body: JSON.stringify({ servo_ids: ids, data, ministerio_nome: ministerio, responsavel, senha })
                 });
+                
                 const json = await res.json();
-                alert(json.mensagem);
-                carregarEscalaDoDia();
-                marcarTodos(false);
-            } catch (erro) { alert("Erro ao salvar."); }
+
+                if (res.ok) {
+                    alert("✅ " + json.mensagem);
+                    carregarEscalaDoDia();
+                    marcarTodos(false);
+                } else {
+                    // Mostra o erro do servidor (ex: Senha incorreta)
+                    alert("❌ " + (json.erro || "Erro desconhecido"));
+                }
+            } catch (erro) { alert("Erro ao conectar."); }
         };
 
         // 6. CARREGAR ESCALA E EXIBIR
@@ -359,9 +371,9 @@
             } catch(e) { div.innerHTML = "Erro ao carregar."; }
         }
 
-        // 7. DELETAR (COM SENHA)
+        // 7. DELETAR (JÁ TINHA SENHA)
         async function deletar(id) {
-            const senha = prompt("🔒 Senha do Coordenador:");
+            const senha = prompt("🔒 Senha do Coordenador para excluir:");
             if(!senha) return;
             
             try {
@@ -371,7 +383,7 @@
                 });
                 
                 if(res.ok) carregarEscalaDoDia();
-                else alert("Senha incorreta ou erro.");
+                else alert("❌ Senha incorreta!");
             } catch(e) { alert("Erro de conexão"); }
         }
 
@@ -379,11 +391,11 @@
         function gerarImagem() {
             const area = document.getElementById('areaParaImagem');
             
-            // Esconde os "X" de deletar para a foto ficar bonita
+            // Esconde os "X" de deletar
             const btns = document.querySelectorAll('.btn-delete');
             btns.forEach(b => b.style.display = 'none');
 
-            // Mostra o cabeçalho (Escala do dia)
+            // Mostra o cabeçalho
             document.querySelector('.cabecalho-imagem').style.display = 'block';
 
             html2canvas(area).then(canvas => {
@@ -392,7 +404,7 @@
                 link.href = canvas.toDataURL("image/jpeg");
                 link.click();
 
-                // Restaura o visual original
+                // Restaura o visual
                 btns.forEach(b => b.style.display = 'block');
                 document.querySelector('.cabecalho-imagem').style.display = 'none';
             });

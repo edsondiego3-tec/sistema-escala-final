@@ -8,12 +8,15 @@
     
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
     <style>
         :root {
             --cor-primaria: #5D4037; --cor-secundaria: #8D6E63;
             --cor-fundo: #EFEBE9; --cor-texto: #3E2723;
-            --cor-branco: #FFFFFF; --cor-sucesso: #2E7D32; --cor-aviso: #FBC02D;
+            --cor-branco: #FFFFFF; --cor-sucesso: #2E7D32; --cor-aviso: #FBC02D; --cor-erro: #D32F2F;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Roboto', sans-serif; background-color: var(--cor-fundo); color: var(--cor-texto); display: flex; justify-content: center; min-height: 100vh; padding-bottom: 80px;}
@@ -23,73 +26,55 @@
         .logo-img { max-width: 150px; display: block; margin: 0 auto 5px auto; }
         
         .abas { display: flex; background: #D7CCC8; }
-        .aba { flex: 1; padding: 15px; text-align: center; cursor: pointer; font-weight: bold; color: #5D4037; border-bottom: 3px solid transparent; }
+        .aba { flex: 1; padding: 15px; text-align: center; cursor: pointer; font-weight: bold; color: #5D4037; border-bottom: 3px solid transparent; transition: 0.3s;}
+        .aba:hover { background: #EFEBE9; }
         .aba.ativa { background: white; border-bottom: 3px solid var(--cor-primaria); color: var(--cor-primaria); }
         
         main { padding: 20px; flex-grow: 1; }
-        .view-section { display: none; }
-        .view-section.ativa { display: block; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+        .view-section { display: none; opacity: 0; transition: opacity 0.3s; }
+        .view-section.ativa { display: block; opacity: 1; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
 
         label { font-size: 0.8rem; color: var(--cor-secundaria); font-weight: 700; margin-bottom: 5px; display: block; text-transform: uppercase; margin-top: 15px;}
-        input, select { width: 100%; padding: 10px; border: 2px solid #D7CCC8; border-radius: 8px; font-size: 0.95rem; margin-bottom: 5px; background: #fff;}
-        .btn-salvar { width: 100%; padding: 15px; background-color: var(--cor-primaria); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 20px; font-size: 1rem; }
-        .btn-mini { padding: 6px 12px; font-size: 0.8rem; background: #D7CCC8; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        input, select { width: 100%; padding: 12px; border: 2px solid #D7CCC8; border-radius: 8px; font-size: 0.95rem; margin-bottom: 5px; background: #fff; transition: 0.2s;}
+        input:focus, select:focus { border-color: var(--cor-primaria); outline: none; box-shadow: 0 0 5px rgba(93, 64, 55, 0.2); }
         
-        /* --- CALENDÁRIO --- */
-        #areaCalendarioPDF { background: white; padding: 10px; color: #000; width: 100%; }
+        .btn-salvar { width: 100%; padding: 15px; background-color: var(--cor-primaria); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 20px; font-size: 1rem; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .btn-salvar:hover { background-color: #3E2723; transform: translateY(-2px); }
+        .btn-salvar:disabled { background-color: #999; cursor: not-allowed; transform: none; }
 
-        /* Logo invisível que só aparece no PDF */
+        .btn-mini { padding: 8px 15px; font-size: 0.85rem; background: #D7CCC8; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-mini:hover { background: #BCAAA4; }
+        
+        /* CALENDÁRIO & PDF */
+        #areaCalendarioPDF { background-color: #ffffff !important; padding: 10px; color: #000; width: 100%; }
         .logo-pdf { display: none; text-align: center; margin-bottom: 10px; }
         .logo-pdf img { height: 60px; }
 
-        .calendario-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; background: var(--cor-primaria); color: white; padding: 10px; border-radius: 6px 6px 0 0; }
+        .calendario-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; background: var(--cor-primaria); color: white; padding: 12px; border-radius: 8px 8px 0 0; }
         
-        .grid-dias { 
-            display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; 
-            text-align: center; font-weight: bold; margin-bottom: 0; 
-            color: var(--cor-branco); background: var(--cor-secundaria); padding: 5px 0; font-size: 0.8rem;
-        }
+        .grid-dias { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; text-align: center; font-weight: bold; color: var(--cor-branco); background: var(--cor-secundaria); padding: 8px 0; font-size: 0.8rem; }
+        .grid-calendario { display: grid; grid-template-columns: repeat(7, 1fr); grid-auto-rows: 95px; gap: 1px; background: #D7CCC8; border: 2px solid var(--cor-secundaria); }
         
-        .grid-calendario { 
-            display: grid; 
-            grid-template-columns: repeat(7, 1fr); 
-            grid-auto-rows: 95px; /* Altura reduzida para caber no A4 sem cortar */
-            gap: 1px; 
-            background: #D7CCC8; 
-            border: 2px solid var(--cor-secundaria); 
-        }
-        
-        .dia-cal { 
-            background: #FFF; padding: 2px; cursor: pointer; position: relative; 
-            font-size: 0.8rem; display: flex; flex-direction: column; overflow: hidden; 
-        }
-        .dia-cal:hover { background: #FAFAFA; overflow-y: auto; }
+        .dia-cal { background: #FFF; padding: 2px; cursor: pointer; position: relative; font-size: 0.8rem; display: flex; flex-direction: column; overflow: hidden; transition: background 0.2s; }
+        .dia-cal:hover { background: #FFF8E1; overflow-y: auto; }
         .dia-cal.hoje { background: #E0F2F1; }
         .dia-numero { font-weight: bold; display: block; margin-bottom: 2px; padding-left: 4px; color: var(--cor-primaria); font-size: 0.9rem;}
         
-        .evento-chip { 
-            font-size: 0.65rem; background: var(--cor-primaria); color: white; 
-            padding: 2px 4px; border-radius: 3px; margin-bottom: 1px; 
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; display: block;
-            line-height: 1.2;
-        }
-        /* Cor para eventos pendentes (não salvos) */
+        .evento-chip { font-size: 0.65rem; background: var(--cor-primaria); color: white; padding: 3px 5px; border-radius: 3px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; display: block; line-height: 1.2; box-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
         .pendente { background: var(--cor-aviso) !important; color: #3E2723 !important; }
 
-        /* Barra flutuante para salvar */
-        #barraSalvar {
-            display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            background: #3E2723; color: white; padding: 15px 30px; border-radius: 50px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 1000; align-items: center; gap: 15px;
-        }
+        #barraSalvar { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #3E2723; color: white; padding: 12px 25px; border-radius: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); z-index: 1000; align-items: center; gap: 15px; animation: slideUp 0.3s; }
+        @keyframes slideUp { from { transform: translate(-50%, 50px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
 
-        .area-modal { display: none; background: #FFF8E1; padding: 15px; border: 2px dashed var(--cor-secundaria); border-radius: 10px; margin-bottom: 20px; }
+        .area-modal { display: none; background: #FFF; padding: 20px; border: 1px solid #ddd; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border-left: 5px solid var(--cor-primaria); }
         .checklist-container { border: 2px solid #D7CCC8; border-radius: 8px; max-height: 250px; overflow-y: auto; padding: 10px; background: #FAFAFA; }
-        .checklist-item { display: flex; align-items: center; padding: 8px; border-bottom: 1px solid #eee; }
-        .checklist-item input { margin-right: 10px; width: 18px; height: 18px; accent-color: var(--cor-primaria); }
-        .card-escala { background: #F5F5F5; border-radius: 8px; padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; border-left: 5px solid var(--cor-primaria); }
-        .btn-acao { border: none; background: none; font-size: 1.2rem; cursor: pointer; }
+        .checklist-item { display: flex; align-items: center; padding: 8px; border-bottom: 1px solid #eee; transition: 0.2s; }
+        .checklist-item:hover { background: #f0f0f0; }
+        .checklist-item input { margin-right: 10px; width: 18px; height: 18px; accent-color: var(--cor-primaria); cursor: pointer; }
+        .card-escala { background: #FFF; border-radius: 8px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; border-left: 5px solid var(--cor-primaria); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .btn-acao { border: none; background: none; font-size: 1.2rem; cursor: pointer; opacity: 0.7; transition: 0.2s; }
+        .btn-acao:hover { opacity: 1; transform: scale(1.1); }
         .esconder-na-foto { display: inline-block; }
     </style>
 </head>
@@ -111,15 +96,15 @@
                 </div>
 
                 <div id="areaCadastro" class="area-modal">
-                    <h3>Novo Cadastro</h3>
-                    <input type="text" id="novoNome" placeholder="Nome">
+                    <h3 style="color:var(--cor-primaria)">Novo Cadastro</h3>
+                    <input type="text" id="novoNome" placeholder="Nome Completo">
                     <select id="novoMinisterio"><option value="Música">Música</option><option value="Acolhida">Acolhida</option><option value="Pregação">Pregação</option><option value="Intercessão">Intercessão</option><option value="Outros">Outros</option></select>
-                    <button onclick="salvarNovoServo()" class="btn-mini">Salvar</button>
+                    <button id="btnSalvarServo" onclick="salvarNovoServo()" class="btn-mini" style="width:100%; margin-top:10px; background:var(--cor-primaria); color:white">Salvar Cadastro</button>
                 </div>
                 <div id="areaGerenciar" class="area-modal">
-                    <h3>Gerenciar</h3>
+                    <h3>Gerenciar Equipe</h3>
                     <input type="text" id="buscaGerencia" placeholder="Buscar..." onkeyup="filtrarGerencia()">
-                    <div id="listaGerencia" style="max-height:150px;overflow-y:auto"></div>
+                    <div id="listaGerencia" style="max-height:200px;overflow-y:auto; margin-top:10px"></div>
                 </div>
 
                 <form id="formEscala">
@@ -141,39 +126,33 @@
                         <option value="Formação">Formação</option>
                         <option value="Famílias">Famílias</option>
                     </select>
-                    <div class="checklist-container" id="containerChecklist"><p style="text-align:center;color:#999;padding:10px">Selecione função...</p></div>
+                    <div class="checklist-container" id="containerChecklist"><p style="text-align:center;color:#999;padding:10px">Selecione uma função acima...</p></div>
                     <div style="margin-top:5px"><button type="button" class="btn-mini" onclick="marcarTodos(true)">Todos</button> <button type="button" class="btn-mini" onclick="marcarTodos(false)">Nenhum</button></div>
-                    <button type="submit" class="btn-salvar">Salvar Escala</button>
+                    <button type="submit" id="btnSalvarEscala" class="btn-salvar">Confirmar Escala</button>
                 </form>
                 <div id="areaParaImagem" style="background:white;padding:10px;margin-top:20px;border:1px solid #eee;border-radius:8px">
                     <h3 style="text-align:center;color:#5D4037;border-bottom:2px solid #5D4037;margin-bottom:10px">ESCALA DO DIA <span id="dataTitulo">--/--</span></h3>
                     <div id="listaEscalados"></div>
                 </div>
-                <button onclick="gerarImagem()" class="btn-salvar" style="background:var(--cor-sucesso);margin-top:10px">📸 Baixar Escala</button>
+                <button onclick="gerarImagem()" class="btn-salvar" style="background:var(--cor-sucesso);margin-top:10px">📸 Baixar Imagem (JPG)</button>
             </div>
 
             <div id="tab-calendario" class="view-section">
                 
                 <div id="areaCalendarioPDF">
-                    <div class="logo-pdf" id="logoPdfHeader">
-                        <img src="logo.png" alt="Logo">
-                    </div>
-
+                    <div class="logo-pdf" id="logoPdfHeader"><img src="logo.png" alt="Logo"></div>
                     <div class="calendario-header">
                         <button class="btn-mini esconder-na-foto" onclick="mudarMes(-1)">◀</button>
                         <h2 id="mesAnoDisplay" style="margin:0; text-transform:uppercase; letter-spacing:1px; font-size:1.2rem">Mês / Ano</h2>
                         <button class="btn-mini esconder-na-foto" onclick="mudarMes(1)">▶</button>
                     </div>
-
-                    <div class="grid-dias">
-                        <div>DOM</div><div>SEG</div><div>TER</div><div>QUA</div><div>QUI</div><div>SEX</div><div>SÁB</div>
-                    </div>
+                    <div class="grid-dias"><div>DOM</div><div>SEG</div><div>TER</div><div>QUA</div><div>QUI</div><div>SEX</div><div>SÁB</div></div>
                     <div id="calendarioGrid" class="grid-calendario"></div>
                 </div>
                 
-                <button onclick="gerarPDFCalendario()" class="btn-salvar" style="background:#D32F2F; margin-top:10px">📄 Baixar Calendário (PDF A4)</button>
+                <button id="btnBaixarPDF" onclick="gerarPDFCalendario()" class="btn-salvar" style="background:#D32F2F; margin-top:10px">📄 Baixar Calendário (PDF A4)</button>
 
-                <div id="modalEvento" class="area-modal" style="margin-top:20px">
+                <div id="modalEvento" class="area-modal" style="margin-top:20px; border-color: var(--cor-aviso); background:#FFFDE7;">
                     <h3>Novo Compromisso</h3>
                     <div style="display:flex; gap:10px;">
                         <div style="flex:1"><label>Início:</label><input type="date" id="evDataInicio" readonly style="background:#EEE"></div>
@@ -182,9 +161,7 @@
                     
                     <label>Título:</label>
                     <input type="text" id="evTitulo" list="sugestoesTitulos" placeholder="Digite ou selecione...">
-                    <datalist id="sugestoesTitulos">
-                        <option value="SANTA MISSA"><option value="REUNIÃO"><option value="RETIRO"><option value="FORMAÇÃO"><option value="GRUPO DE ORAÇÃO"><option value="ADORAÇÃO"><option value="VIGÍLIA">
-                    </datalist>
+                    <datalist id="sugestoesTitulos"><option value="SANTA MISSA"><option value="REUNIÃO"><option value="RETIRO"><option value="FORMAÇÃO"><option value="GRUPO DE ORAÇÃO"><option value="ADORAÇÃO"><option value="VIGÍLIA"></datalist>
                     
                     <label>Ministério:</label>
                     <select id="evMinisterio">
@@ -213,18 +190,42 @@
         </main>
         
         <div id="barraSalvar">
-            <span id="txtPendentes">0 alterações pendentes</span>
-            <button onclick="processarFila()" class="btn-mini" style="background:#4CAF50; color:white; font-size:1rem; padding:8px 15px">💾 SALVAR TUDO</button>
+            <span id="txtPendentes">0 alterações</span>
+            <button id="btnSalvarFila" onclick="processarFila()" class="btn-mini" style="background:#4CAF50; color:white; font-size:1rem; padding:8px 15px">💾 SALVAR TUDO</button>
         </div>
     </div>
 
     <script>
         let todosServos = [];
         let eventosMes = [];
-        let filaPendentes = []; // LISTA TEMPORÁRIA
+        let filaPendentes = []; 
         let dataCalendario = new Date();
 
-        // --- SISTEMA DE ABAS ---
+        // --- SISTEMA DE NOTIFICAÇÕES (TOAST) ---
+        function toast(msg, tipo = "sucesso") {
+            const cor = tipo === "sucesso" ? "var(--cor-sucesso)" : "var(--cor-erro)";
+            Toastify({
+                text: msg, duration: 3000, gravity: "top", position: "right",
+                style: { background: cor, borderRadius: "8px", fontWeight: "bold" }
+            }).showToast();
+        }
+
+        // --- CONTROLE DE BOTÕES (UX) ---
+        function setLoading(btnId, isLoading, textNormal = "Salvar") {
+            const btn = document.getElementById(btnId);
+            if(!btn) return;
+            if(isLoading) {
+                btn.disabled = true;
+                btn.innerText = "⏳ Processando...";
+                btn.style.opacity = "0.7";
+            } else {
+                btn.disabled = false;
+                btn.innerText = textNormal;
+                btn.style.opacity = "1";
+            }
+        }
+
+        // --- NAVEGAÇÃO ---
         function mudarAba(id, el) {
             document.querySelectorAll('.view-section').forEach(v => v.classList.remove('ativa'));
             document.getElementById(id).classList.add('ativa');
@@ -240,7 +241,7 @@
                 const res = await fetch('/eventos');
                 eventosMes = await res.json();
                 renderizarCalendario();
-            } catch(e) {}
+            } catch(e) { toast("Erro ao carregar agenda", "erro"); }
         }
 
         function renderizarCalendario() {
@@ -250,25 +251,18 @@
             const mes = dataCalendario.getMonth();
             const meses = ["JANEIRO","FEVEREIRO","MARÇO","ABRIL","MAIO","JUNHO","JULHO","AGOSTO","SETEMBRO","OUTUBRO","NOVEMBRO","DEZEMBRO"];
             document.getElementById('mesAnoDisplay').innerText = `${meses[mes]} ${ano}`;
-
             const primeiroDia = new Date(ano, mes, 1).getDay();
             const ultimoDia = new Date(ano, mes + 1, 0).getDate();
-
             for(let i=0; i<primeiroDia; i++) grid.innerHTML += `<div style="background:#EEE"></div>`;
-
             const hoje = new Date().toISOString().split('T')[0];
             
             for(let dia=1; dia<=ultimoDia; dia++) {
                 const dataFmt = `${ano}-${String(mes+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
-                
-                // Pega eventos salvos + eventos pendentes da fila
                 const salvos = eventosMes.filter(e => e.data === dataFmt);
                 const pendentes = filaPendentes.filter(e => e.data === dataFmt);
-                
                 let html = "";
                 salvos.forEach(ev => html += `<div class="evento-chip">${ev.titulo}</div>`);
                 pendentes.forEach(ev => html += `<div class="evento-chip pendente">⏳ ${ev.titulo}</div>`);
-
                 const cls = dataFmt === hoje ? 'dia-cal hoje' : 'dia-cal';
                 const div = document.createElement('div');
                 div.className = cls;
@@ -277,138 +271,121 @@
                 grid.appendChild(div);
             }
         }
-
         function mudarMes(d) { dataCalendario.setMonth(dataCalendario.getMonth()+d); carregarEventosDoMes(); }
 
-        // --- GERAR PDF (CORRIGIDO) ---
+        // --- PDF ---
         function gerarPDFCalendario() {
-            const el = document.getElementById('areaCalendarioPDF');
+            const btn = document.getElementById('btnBaixarPDF');
+            setLoading('btnBaixarPDF', true, "Gerando PDF...");
             
-            // Prepara para impressão: mostra logo, esconde botões
-            document.getElementById('logoPdfHeader').style.display = 'block';
-            document.querySelectorAll('.esconder-na-foto').forEach(b => b.style.display='none');
-            
-            const opt = {
-                margin: 5,
-                filename: `Calendario_${document.getElementById('mesAnoDisplay').innerText}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-            };
+            const elemento = document.getElementById('areaCalendarioPDF');
+            const logo = document.getElementById('logoPdfHeader');
+            const botoes = document.querySelectorAll('.esconder-na-foto');
+            logo.style.display = 'block';
+            botoes.forEach(b => b.style.display = 'none');
 
-            html2pdf().set(opt).from(el).save().then(() => {
-                // Restaura visual
-                document.getElementById('logoPdfHeader').style.display = 'none';
-                document.querySelectorAll('.esconder-na-foto').forEach(b => b.style.display='inline-block');
-            });
+            const opt = { margin: 5, filename: `Calendario_${document.getElementById('mesAnoDisplay').innerText}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } };
+            
+            setTimeout(() => {
+                html2pdf().set(opt).from(elemento).save().then(() => {
+                    logo.style.display = 'none';
+                    botoes.forEach(b => b.style.display = 'inline-block');
+                    setLoading('btnBaixarPDF', false, "📄 Baixar Calendário (PDF A4)");
+                    toast("PDF gerado com sucesso!");
+                }).catch(err => {
+                    toast("Erro ao gerar PDF", "erro");
+                    setLoading('btnBaixarPDF', false, "📄 Baixar Calendário (PDF A4)");
+                });
+            }, 200);
         }
 
-        // --- FILA DE EVENTOS (LOTE) ---
+        // --- FILA DE EVENTOS ---
         function abrirModalEvento(d) {
             document.getElementById('modalEvento').style.display='block';
             document.getElementById('evDataInicio').value = d;
             document.getElementById('evDataFim').value = "";
             document.getElementById('evTitulo').value = "";
-            
             const div = document.getElementById('listaEventosDia');
             div.innerHTML = "<h4>Neste dia:</h4>";
-            
-            // Mostra salvos
             const salvos = eventosMes.filter(e => e.data === d);
             salvos.forEach(ev => div.innerHTML += `<div style="padding:5px;border-bottom:1px solid #ddd;display:flex;justify-content:space-between"><span>${ev.titulo}</span><button onclick="apagarEvento(${ev.id})" style="color:red;border:none;cursor:pointer">🗑️</button></div>`);
-            
-            // Mostra pendentes
             const pends = filaPendentes.filter(e => e.data === d);
             pends.forEach((ev, idx) => div.innerHTML += `<div style="padding:5px;background:#FFF9C4;display:flex;justify-content:space-between"><span>⏳ ${ev.titulo}</span><small>Pendente</small></div>`);
         }
         function fecharModalEvento() { document.getElementById('modalEvento').style.display='none'; }
-
         function adicionarAFila() {
             const tit = document.getElementById('evTitulo').value;
             const ini = document.getElementById('evDataInicio').value;
             const fim = document.getElementById('evDataFim').value;
             const min = document.getElementById('evMinisterio').value;
-            
-            if(!tit) return alert("Digite o título!");
-
+            if(!tit) return toast("Digite o título!", "erro");
             let tituloFinal = tit;
             if(min !== 'Geral') tituloFinal = `${tit} - ${min}`;
-
-            // Calcula dias
             let atual = new Date(ini); atual.setMinutes(atual.getMinutes()+atual.getTimezoneOffset());
             let limite = fim ? new Date(fim) : new Date(ini); limite.setMinutes(limite.getMinutes()+limite.getTimezoneOffset());
-
-            if(limite < atual) return alert("Data final menor que início");
-
-            let count = 0;
+            if(limite < atual) return toast("Data final menor que início", "erro");
             while(atual <= limite) {
-                filaPendentes.push({
-                    titulo: tituloFinal,
-                    data: atual.toISOString().split('T')[0],
-                    ministerio: min
-                });
+                filaPendentes.push({ titulo: tituloFinal, data: atual.toISOString().split('T')[0], ministerio: min });
                 atual.setDate(atual.getDate()+1);
-                count++;
             }
-
-            fecharModalEvento();
-            renderizarCalendario();
-            atualizarBarraSalvar();
+            fecharModalEvento(); renderizarCalendario(); atualizarBarraSalvar();
+            toast("Adicionado à lista de espera!");
         }
-
         function atualizarBarraSalvar() {
             const barra = document.getElementById('barraSalvar');
-            const txt = document.getElementById('txtPendentes');
             if(filaPendentes.length > 0) {
                 barra.style.display = 'flex';
-                txt.innerText = `${filaPendentes.length} alterações pendentes`;
-            } else {
-                barra.style.display = 'none';
-            }
+                document.getElementById('txtPendentes').innerText = `${filaPendentes.length} alterações`;
+            } else { barra.style.display = 'none'; }
         }
-
         async function processarFila() {
             if(filaPendentes.length === 0) return;
             const senha = prompt(`Salvar ${filaPendentes.length} eventos?\n🔒 Digite a Senha:`);
             if(!senha) return;
-
-            // Envia um por um (simples e seguro)
+            setLoading('btnSalvarFila', true);
             let erros = 0;
             for(const ev of filaPendentes) {
-                const res = await fetch('/eventos', {
-                    method: 'POST', headers:{'Content-Type':'application/json'},
-                    body: JSON.stringify({ ...ev, senha })
-                });
+                const res = await fetch('/eventos', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ...ev, senha }) });
                 if(!res.ok) erros++;
             }
-
-            if(erros > 0) alert(`Atenção: ${erros} eventos falharam (senha incorreta?).`);
-            else alert("✅ Tudo Salvo!");
-
-            filaPendentes = []; // Limpa fila
-            atualizarBarraSalvar();
-            carregarEventosDoMes();
+            setLoading('btnSalvarFila', false, "💾 SALVAR TUDO");
+            if(erros > 0) toast(`${erros} eventos falharam. Senha?`, "erro");
+            else toast("Tudo salvo com sucesso!");
+            filaPendentes = []; atualizarBarraSalvar(); carregarEventosDoMes();
         }
-
         async function apagarEvento(id) {
             if(!confirm("Apagar?")) return;
             const senha = prompt("🔒 Senha:"); if(!senha) return;
             const r = await fetch(`/eventos/${id}`, {method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({senha})});
-            if(r.ok) { const d=document.getElementById('evDataInicio').value; carregarEventosDoMes(); setTimeout(()=>abrirModalEvento(d),500); }
-            else alert("Erro");
+            if(r.ok) { const d=document.getElementById('evDataInicio').value; carregarEventosDoMes(); setTimeout(()=>abrirModalEvento(d),500); toast("Apagado!"); }
+            else toast("Erro ao apagar", "erro");
         }
 
-        // --- ESCALAS E GERAIS ---
+        // --- GERAIS E ESCALAS ---
         async function carregarDadosIniciais(){try{const r=await fetch('/servos');todosServos=await r.json();}catch(e){}}
-        async function salvarNovoServo(){const n=document.getElementById('novoNome').value;const m=document.getElementById('novoMinisterio').value;if(!n)return;await fetch('/servos',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:n,ministerio:m})});alert("Salvo!");toggleArea('areaCadastro');carregarDadosIniciais();}
+        async function salvarNovoServo(){
+            const n=document.getElementById('novoNome').value;const m=document.getElementById('novoMinisterio').value;if(!n)return toast("Preencha o nome","erro");
+            setLoading('btnSalvarServo', true);
+            await fetch('/servos',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:n,ministerio:m})});
+            setLoading('btnSalvarServo', false, "Salvar Cadastro");
+            toast("Cadastro Realizado!");toggleArea('areaCadastro');carregarDadosIniciais();
+        }
         function filtrarListaPorMinisterio(){const m=document.getElementById('selectMinisterio').value;const c=document.getElementById('containerChecklist');c.innerHTML="";if(!m)return;const l=todosServos.filter(s=>m==="Geral"?true:s.ministerio&&s.ministerio.includes(m));if(l.length===0)c.innerHTML="<p style='text-align:center'>Vazio</p>";l.forEach(s=>{c.innerHTML+=`<div class="checklist-item"><label style='display:flex;width:100%'><input type='checkbox' value='${s.id}' class='chk-servo'><span style='flex:1'>${s.nome}</span><small>(${s.ministerio})</small></label></div>`})}
         function marcarTodos(b){document.querySelectorAll('.chk-servo').forEach(c=>c.checked=b)}
-        document.getElementById('formEscala').onsubmit=async(e)=>{e.preventDefault();const i=Array.from(document.querySelectorAll('.chk-servo:checked')).map(c=>c.value);if(i.length===0)return alert("Selecione alguém!");const s=prompt("🔒 Senha:");if(!s)return;const r=await fetch('/escalar-multiplo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({servo_ids:i,data:document.getElementById('dataEscala').value,ministerio_nome:document.getElementById('selectMinisterio').value,responsavel:document.getElementById('inputResponsavel').value,senha:s})});const j=await r.json();alert(r.ok?j.mensagem:j.erro);if(r.ok){carregarEscalaDoDia();marcarTodos(false);}}
+        document.getElementById('formEscala').onsubmit=async(e)=>{
+            e.preventDefault();const i=Array.from(document.querySelectorAll('.chk-servo:checked')).map(c=>c.value);if(i.length===0)return toast("Selecione alguém!","erro");
+            const s=prompt("🔒 Senha:");if(!s)return;
+            setLoading('btnSalvarEscala', true);
+            const r=await fetch('/escalar-multiplo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({servo_ids:i,data:document.getElementById('dataEscala').value,ministerio_nome:document.getElementById('selectMinisterio').value,responsavel:document.getElementById('inputResponsavel').value,senha:s})});
+            const j=await r.json(); 
+            setLoading('btnSalvarEscala', false, "Confirmar Escala");
+            if(r.ok){ toast(j.mensagem); carregarEscalaDoDia(); marcarTodos(false);} else { toast(j.erro, "erro"); }
+        }
         async function carregarEscalaDoDia(){const d=document.getElementById('dataEscala').value;if(!d)return;document.getElementById('dataTitulo').innerText=d.split('-').reverse().join('/');const div=document.getElementById('listaEscalados');div.innerHTML="Carregando...";const r=await fetch(`/escalas/${d}`);const l=await r.json();div.innerHTML="";l.forEach(i=>{div.innerHTML+=`<div class='card-escala'><div><b>${i.servos?.nome}</b><br><small>${i.ministerio_nome}</small></div><button class='btn-acao' onclick='delEscala(${i.id})'>❌</button></div>`})}
-        async function delEscala(id){const s=prompt("Senha:");if(!s)return;const r=await fetch(`/escalas/${id}`,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({senha:s})});if(r.ok)carregarEscalaDoDia();else alert("Erro");}
-        function gerarImagem(){const a=document.getElementById('areaParaImagem');document.querySelectorAll('.btn-acao').forEach(b=>b.style.display='none');html2canvas(a).then(c=>{const l=document.createElement('a');l.download='escala.jpg';l.href=c.toDataURL();l.click();document.querySelectorAll('.btn-acao').forEach(b=>b.style.display='block');})}
+        async function delEscala(id){const s=prompt("Senha:");if(!s)return;const r=await fetch(`/escalas/${id}`,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({senha:s})});if(r.ok){carregarEscalaDoDia();toast("Excluído!");}else toast("Erro","erro");}
+        function gerarImagem(){const a=document.getElementById('areaParaImagem');document.querySelectorAll('.btn-acao').forEach(b=>b.style.display='none');html2canvas(a).then(c=>{const l=document.createElement('a');l.download='escala.jpg';l.href=c.toDataURL();l.click();document.querySelectorAll('.btn-acao').forEach(b=>b.style.display='block');toast("Imagem baixada!");})}
         function carregarParaGerenciar(){const d=document.getElementById('listaGerencia');d.innerHTML="";todosServos.forEach(s=>d.innerHTML+=`<div style='display:flex;justify-content:space-between;padding:5px;border-bottom:1px solid #eee'><span>${s.nome}</span><button onclick="editarServo(${s.id},'${s.nome}','${s.ministerio}')">✏️</button></div>`)}
-        async function editarServo(id,n,m){const nn=prompt("Nome:",n);const nm=prompt("Min:",m);const s=prompt("Senha:");if(nn&&nm&&s)await fetch(`/servos/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:nn,ministerio:nm,senha:s})});carregarDadosIniciais();}
+        async function editarServo(id,n,m){const nn=prompt("Nome:",n);const nm=prompt("Min:",m);const s=prompt("Senha:");if(nn&&nm&&s)await fetch(`/servos/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:nn,ministerio:nm,senha:s})});carregarDadosIniciais();toast("Atualizado!");}
 
         window.onload = () => { carregarDadosIniciais(); };
     </script>

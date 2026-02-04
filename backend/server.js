@@ -12,19 +12,26 @@ app.use(express.static(path.join(__dirname, '../frontend')));
 
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../frontend/index.html')));
 
-async function gravarHistorico(acao, detalhes, responsavel) {
-    try { await supabase.from('historico').insert([{ acao, detalhes, responsavel }]); } catch (e) {}
-}
+// --- ROTAS DE SERVOS ---
 
-// --- SERVOS (Agora com Telefone) ---
+// LISTAR (Apenas os ativos, ou seja, onde deletado_em é NULO)
 app.get('/servos', async (req, res) => {
-    const { data, error } = await supabase.from('servos').select('*').order('nome');
+    const { ver_lixeira } = req.query; // Recebe parametro se quer ver lixeira
+    let query = supabase.from('servos').select('*').order('nome');
+    
+    if (ver_lixeira === 'true') {
+        query = query.not('deletado_em', 'is', null); // Só os excluídos
+    } else {
+        query = query.is('deletado_em', null); // Só os ativos
+    }
+
+    const { data, error } = await query;
     if (error) return res.status(500).json({ erro: error.message });
     res.json(data);
 });
 
 app.post('/servos', async (req, res) => {
-    const { nome, ministerio, telefone } = req.body; // Recebe telefone
+    const { nome, ministerio, telefone } = req.body;
     try {
         const { error } = await supabase.from('servos').insert([{ nome, ministerio, telefone }]);
         if (error) throw error;
@@ -34,31 +41,46 @@ app.post('/servos', async (req, res) => {
 
 app.put('/servos/:id', async (req, res) => {
     const { id } = req.params;
-    const { nome, ministerio, telefone, senha } = req.body; // Recebe telefone
+    const { nome, ministerio, telefone, senha, restaurar } = req.body;
+    
     if (senha !== SENHA_COORDENADOR) return res.status(403).json({ erro: "🔒 Senha incorreta!" });
+
     try {
-        const { error } = await supabase.from('servos').update({ nome, ministerio, telefone }).eq('id', id);
+        let dadosParaAtualizar = {};
+        
+        // Se for comando de RESTAURAR
+        if (restaurar) {
+            dadosParaAtualizar = { deletado_em: null }; // Remove a data de exclusão
+        } else {
+            dadosParaAtualizar = { nome, ministerio, telefone };
+        }
+
+        const { error } = await supabase.from('servos').update(dadosParaAtualizar).eq('id', id);
         if (error) throw error;
-        res.json({ message: "Atualizado!" });
+        res.json({ message: restaurar ? "Servo restaurado!" : "Atualizado!" });
     } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
+// DELETAR (Agora é SOFT DELETE: Apenas marca a data)
 app.delete('/servos-cadastro/:id', async (req, res) => {
     const { id } = req.params;
     const { senha } = req.body;
     if (senha !== SENHA_COORDENADOR) return res.status(403).json({ erro: "🔒 Senha incorreta!" });
+    
     try {
-        await supabase.from('escalas').delete().eq('servo_id', id);
-        const { error } = await supabase.from('servos').delete().eq('id', id);
+        // Marca como deletado (não apaga de verdade)
+        const { error } = await supabase.from('servos').update({ deletado_em: new Date() }).eq('id', id);
         if (error) throw error;
-        res.json({ message: "Removido!" });
+        res.json({ message: "Enviado para a lixeira!" });
     } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
-// --- ESCALAS (Traz o telefone junto) ---
+// --- ESCALAS ---
 app.get('/escalas/:data', async (req, res) => {
-    // Busca o telefone do servo na hora de montar a escala
-    const { data: lista, error } = await supabase.from('escalas').select('*, servos(nome, telefone)').eq('data', req.params.data);
+    const { data: lista } = await supabase.from('escalas')
+        .select('*, servos(nome, telefone)')
+        .eq('data', req.params.data)
+        .is('deletado_em', null); // Não mostra escalas excluídas
     res.json(lista || []);
 });
 
@@ -68,13 +90,12 @@ app.post('/escalar-multiplo', async (req, res) => {
 
     let salvos = 0;
     for (const id of servo_ids) {
-        try {
-            const { data: conflito } = await supabase.from('escalas').select('*').eq('servo_id', id).eq('data', data);
-            if (!conflito || conflito.length === 0) {
-                await supabase.from('escalas').insert([{ servo_id: id, data, ministerio_nome }]);
-                salvos++;
-            }
-        } catch (e) {}
+        // Verifica se já existe ATIVO
+        const { data: conflito } = await supabase.from('escalas').select('*').eq('servo_id', id).eq('data', data).is('deletado_em', null);
+        if (!conflito || conflito.length === 0) {
+            await supabase.from('escalas').insert([{ servo_id: id, data, ministerio_nome }]);
+            salvos++;
+        }
     }
     res.json({ mensagem: `Sucesso! ${salvos} escalados.` });
 });
@@ -83,31 +104,30 @@ app.delete('/escalas/:id', async (req, res) => {
     const { id } = req.params;
     const { senha } = req.body;
     if (senha !== SENHA_COORDENADOR) return res.status(403).json({ erro: "🔒 Senha incorreta!" });
-    await supabase.from('escalas').delete().eq('id', id);
-    res.json({ message: "Excluído!" });
+    // Soft delete na escala também
+    await supabase.from('escalas').update({ deletado_em: new Date() }).eq('id', id);
+    res.json({ message: "Removido da escala!" });
 });
 
 // --- CALENDÁRIO ---
 app.get('/eventos', async (req, res) => {
-    const { data, error } = await supabase.from('eventos').select('*').order('data');
+    const { data } = await supabase.from('eventos').select('*').is('deletado_em', null).order('data');
     res.json(data || []);
 });
 
 app.post('/eventos', async (req, res) => {
     const { titulo, data, ministerio, senha } = req.body;
     if (senha !== SENHA_COORDENADOR) return res.status(403).json({ erro: "🔒 Senha incorreta!" });
-    try {
-        const { error } = await supabase.from('eventos').insert([{ titulo, data, ministerio }]);
-        if (error) throw error;
-        res.json({ message: "Evento criado!" });
-    } catch (e) { res.status(500).json({ erro: e.message }); }
+    await supabase.from('eventos').insert([{ titulo, data, ministerio }]);
+    res.json({ message: "Evento criado!" });
 });
 
 app.delete('/eventos/:id', async (req, res) => {
     const { id } = req.params;
     const { senha } = req.body;
     if (senha !== SENHA_COORDENADOR) return res.status(403).json({ erro: "🔒 Senha incorreta!" });
-    try { await supabase.from('eventos').delete().eq('id', id); res.json({ message: "Apagado!" }); } catch (e) { res.status(500).json({ erro: e.message }); }
+    await supabase.from('eventos').update({ deletado_em: new Date() }).eq('id', id);
+    res.json({ message: "Evento apagado!" });
 });
 
 const port = process.env.PORT || 3000;

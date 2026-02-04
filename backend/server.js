@@ -17,16 +17,13 @@ async function gravarHistorico(acao, detalhes, responsavel) {
     catch (e) { console.error(e); }
 }
 
-// --- ROTAS DE SERVOS (CADASTRO) ---
-
-// 1. LISTAR
+// --- ROTAS DE SERVOS ---
 app.get('/servos', async (req, res) => {
     const { data, error } = await supabase.from('servos').select('*').order('nome');
     if (error) return res.status(500).json({ erro: error.message });
     res.json(data);
 });
 
-// 2. CADASTRAR
 app.post('/servos', async (req, res) => {
     const { nome, ministerio } = req.body;
     try {
@@ -36,41 +33,30 @@ app.post('/servos', async (req, res) => {
     } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
-// 3. ATUALIZAR (MUDAR MINISTÉRIO/NOME) - COM SENHA
 app.put('/servos/:id', async (req, res) => {
     const { id } = req.params;
     const { nome, ministerio, senha } = req.body;
-
     if (senha !== SENHA_COORDENADOR) return res.status(403).json({ erro: "🔒 Senha incorreta!" });
-
     try {
         const { error } = await supabase.from('servos').update({ nome, ministerio }).eq('id', id);
         if (error) throw error;
-        res.json({ message: "Servo atualizado com sucesso!" });
+        res.json({ message: "Atualizado!" });
     } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
-// 4. DELETAR SERVO DO CADASTRO - COM SENHA
 app.delete('/servos-cadastro/:id', async (req, res) => {
     const { id } = req.params;
     const { senha } = req.body;
-
     if (senha !== SENHA_COORDENADOR) return res.status(403).json({ erro: "🔒 Senha incorreta!" });
-
     try {
-        // Primeiro apaga as escalas dele para não dar erro
         await supabase.from('escalas').delete().eq('servo_id', id);
-        // Depois apaga o servo
         const { error } = await supabase.from('servos').delete().eq('id', id);
-        
         if (error) throw error;
-        res.json({ message: "Servo removido do sistema!" });
+        res.json({ message: "Removido!" });
     } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
-
 // --- ROTAS DE ESCALAS ---
-
 app.get('/escalas/:data', async (req, res) => {
     const { data: lista, error } = await supabase.from('escalas').select('*, servos(nome)').eq('data', req.params.data);
     res.json(lista || []);
@@ -98,9 +84,39 @@ app.delete('/escalas/:id', async (req, res) => {
     const { id } = req.params;
     const { senha } = req.body;
     if (senha !== SENHA_COORDENADOR) return res.status(403).json({ erro: "🔒 Senha incorreta!" });
-    
     await supabase.from('escalas').delete().eq('id', id);
     res.json({ message: "Excluído!" });
+});
+
+// --- NOVO: ROTAS DO CALENDÁRIO (EVENTOS) ---
+app.get('/eventos', async (req, res) => {
+    // Pega todos os eventos ordenados por data
+    const { data, error } = await supabase.from('eventos').select('*').order('data');
+    if (error) return res.status(500).json({ erro: error.message });
+    res.json(data);
+});
+
+app.post('/eventos', async (req, res) => {
+    const { titulo, data, ministerio, senha } = req.body;
+    if (senha !== SENHA_COORDENADOR) return res.status(403).json({ erro: "🔒 Senha incorreta!" });
+
+    try {
+        const { error } = await supabase.from('eventos').insert([{ titulo, data, ministerio }]);
+        if (error) throw error;
+        res.json({ message: "Evento criado!" });
+    } catch (e) { res.status(500).json({ erro: e.message }); }
+});
+
+app.delete('/eventos/:id', async (req, res) => {
+    const { id } = req.params;
+    const { senha } = req.body;
+    if (senha !== SENHA_COORDENADOR) return res.status(403).json({ erro: "🔒 Senha incorreta!" });
+
+    try {
+        const { error } = await supabase.from('eventos').delete().eq('id', id);
+        if (error) throw error;
+        res.json({ message: "Evento apagado!" });
+    } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
 const port = process.env.PORT || 3000;

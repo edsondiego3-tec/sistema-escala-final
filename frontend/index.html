@@ -64,7 +64,6 @@
         .card-escala { background: #F5F5F5; border-radius: 8px; padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; border-left: 5px solid var(--cor-primaria); }
         .btn-acao { border: none; background: none; font-size: 1.2rem; cursor: pointer; }
 
-        /* Classe para esconder botões na hora da foto */
         .esconder-na-foto { display: inline-block; }
     </style>
 </head>
@@ -72,7 +71,6 @@
     <div class="app-container">
         <header>
             <img src="logo.png" class="logo-img">
-            
             <div class="abas">
                 <div class="aba ativa" onclick="mudarAba('tab-escala', this)">📋 ESCALAS</div>
                 <div class="aba" onclick="mudarAba('tab-calendario', this)">📅 CALENDÁRIO</div>
@@ -150,9 +148,26 @@
                 <div id="modalEvento" class="area-modal" style="margin-top:20px">
                     <h3>Novo Compromisso</h3>
                     <label>Data:</label><input type="date" id="evData" readonly style="background:#EEE">
-                    <label>Título:</label><input type="text" id="evTitulo">
-                    <label>Ministério:</label>
-                    <select id="evMinisterio"><option value="Geral">Geral</option><option value="Música">Música</option><option value="Acolhida">Acolhida</option><option value="Coordenação">Coordenação</option><option value="Jovem">Jovem</option><option value="Pregação">Pregação</option></select>
+                    
+                    <label>Título (Ex: Reunião, Missa):</label>
+                    <input type="text" id="evTitulo" placeholder="O que vai acontecer?">
+                    
+                    <label>Ministério Responsável:</label>
+                    <select id="evMinisterio">
+                        <option value="Geral">Geral (Todos)</option>
+                        <option value="Música">Música</option>
+                        <option value="Comunicação">Comunicação</option>
+                        <option value="Acolhida">Acolhida</option>
+                        <option value="Pregação">Pregação</option>
+                        <option value="Intercessão">Intercessão</option>
+                        <option value="Crianças">Crianças</option>
+                        <option value="Coordenação">Coordenação</option>
+                        <option value="Promoção Humana">Promoção Humana</option>
+                        <option value="Jovem">Jovem</option>
+                        <option value="Formação">Formação</option>
+                        <option value="Famílias">Famílias</option>
+                    </select>
+
                     <div style="display:flex;gap:10px;margin-top:15px"><button onclick="fecharModalEvento()" class="btn-mini" style="background:#999;flex:1">Cancelar</button><button onclick="salvarEvento()" class="btn-mini" style="background:var(--cor-primaria);color:white;flex:1">Salvar</button></div>
                 </div>
                 <div id="listaEventosDia" style="margin-top:20px"></div>
@@ -204,7 +219,6 @@
                 const dataFmt = `${ano}-${String(mes+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
                 const evsDia = eventosMes.filter(e => e.data === dataFmt);
                 let htmlEvs = "";
-                // Mostra no máximo 3 pontinhos/nomes para não estourar o quadrado
                 evsDia.slice(0,4).forEach(ev => { htmlEvs += `<div class="evento-chip">${ev.titulo}</div>`; });
                 if(evsDia.length > 4) htmlEvs += `<div class="evento-chip" style="background:#999">+${evsDia.length-4}</div>`;
 
@@ -222,21 +236,14 @@
             carregarEventosDoMes();
         }
 
-        // --- FOTO DO CALENDÁRIO (NOVO) ---
         function gerarImagemCalendario() {
             const area = document.getElementById('areaCalendarioImagem');
-            
-            // 1. Esconde as setas para a foto ficar bonita
             document.querySelectorAll('.esconder-na-foto').forEach(btn => btn.style.display = 'none');
-
-            // 2. Tira a foto
             html2canvas(area).then(canvas => {
                 const link = document.createElement('a');
                 link.download = `Calendario_Jacozinho_${document.getElementById('mesAnoDisplay').innerText}.jpg`;
                 link.href = canvas.toDataURL("image/jpeg");
                 link.click();
-
-                // 3. Mostra as setas de volta
                 document.querySelectorAll('.esconder-na-foto').forEach(btn => btn.style.display = 'inline-block');
             });
         }
@@ -260,13 +267,24 @@
         function fecharModalEvento() { document.getElementById('modalEvento').style.display = 'none'; }
 
         async function salvarEvento() {
-            const titulo = document.getElementById('evTitulo').value;
+            const tituloOriginal = document.getElementById('evTitulo').value;
             const data = document.getElementById('evData').value;
             const ministerio = document.getElementById('evMinisterio').value;
-            if(!titulo) return alert("Digite um título!");
+            
+            if(!tituloOriginal) return alert("Digite um título!");
+            
             const senha = prompt("🔒 Senha de Coordenador:");
             if(!senha) return;
-            const res = await fetch('/eventos', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ titulo, data, ministerio, senha }) });
+
+            // --- AQUI ESTÁ A MÁGICA ---
+            // Se o ministério NÃO for "Geral", a gente junta no nome.
+            let tituloFinal = tituloOriginal;
+            if(ministerio !== 'Geral') {
+                tituloFinal = `${tituloOriginal} - ${ministerio}`;
+            }
+
+            const res = await fetch('/eventos', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ titulo: tituloFinal, data, ministerio, senha }) });
+            
             if(res.ok) { alert("Salvo!"); carregarEventosDoMes(); abrirModalEvento(data); } else { alert("Erro/Senha"); }
         }
 
@@ -318,7 +336,6 @@
             document.querySelectorAll('.btn-acao').forEach(b => b.style.display='none');
             html2canvas(area).then(c => { const a = document.createElement('a'); a.download='escala.jpg'; a.href=c.toDataURL(); a.click(); document.querySelectorAll('.btn-acao').forEach(b => b.style.display='block'); });
         }
-        // --- GERENCIAR ---
         function carregarParaGerenciar() { const div = document.getElementById('listaGerencia'); div.innerHTML=""; todosServos.forEach(s => div.innerHTML+=`<div style="display:flex;justify-content:space-between;padding:5px;border-bottom:1px solid #eee"><span>${s.nome}</span><button onclick="editarServo(${s.id},'${s.nome}','${s.ministerio}')">✏️</button></div>`); }
         async function editarServo(id,n,m) { const nn = prompt("Nome:",n); const nm=prompt("Ministério:",m); const s=prompt("Senha:"); if(nn&&nm&&s) await fetch(`/servos/${id}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({nome:nn,ministerio:nm,senha:s})}); carregarDadosIniciais(); }
 

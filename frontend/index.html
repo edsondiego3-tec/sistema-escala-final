@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jacozinho do Senhor</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
@@ -31,11 +32,11 @@
         .btn-mini { padding: 8px 15px; font-size: 0.85rem; background: #D7CCC8; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .btn-zap { background-color: #25D366; color: white; border: none; padding: 6px 10px; border-radius: 5px; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; font-size: 0.8rem; }
         
-        /* ESTILOS DA LIXEIRA */
-        #areaLixeira { display: none; background: #FFEBEE; border: 2px solid #EF9A9A; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
-        .item-lixo { display: flex; justify-content: space-between; align-items: center; background: white; padding: 10px; border-radius: 5px; margin-bottom: 5px; border-left: 4px solid #D32F2F; }
+        /* LIXEIRA ESTILOS */
+        #areaLixeira { display: none; background: #FFEBEE; border: 2px solid #EF9A9A; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid #D32F2F; }
+        .item-lixo { display: flex; justify-content: space-between; align-items: center; background: white; padding: 10px; border-radius: 5px; margin-bottom: 5px; border-bottom: 1px solid #eee; }
         .btn-restaurar { background: #4CAF50; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; margin-right: 5px; }
-        
+
         #areaCalendarioPDF { background-color: #ffffff !important; padding: 10px; color: #000; width: 100%; }
         .logo-pdf { display: none; text-align: center; margin-bottom: 10px; } .logo-pdf img { height: 60px; }
         .calendario-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; background: var(--cor-primaria); color: white; padding: 12px; border-radius: 8px 8px 0 0; }
@@ -98,12 +99,12 @@
                     <div id="listaGerencia" style="max-height:200px;overflow-y:auto; margin-top:10px"></div>
                 </div>
 
-                <div id="areaLixeira" class="area-modal" style="display:none; background:#FFEBEE;">
-                    <div style="display:flex; justify-content:space-between;">
-                        <h3 style="color:#D32F2F">Lixeira (Itens Excluídos)</h3>
+                <div id="areaLixeira" class="area-modal">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <h3 style="color:#D32F2F; margin:0">🗑️ Lixeira</h3>
                         <button onclick="document.getElementById('areaLixeira').style.display='none'" class="btn-mini">Fechar</button>
                     </div>
-                    <div id="listaLixeira" style="max-height:200px; overflow-y:auto; margin-top:10px">Carregando...</div>
+                    <div id="listaLixeira" style="max-height:200px; overflow-y:auto;">Carregando...</div>
                 </div>
 
                 <form id="formEscala">
@@ -175,50 +176,50 @@
         function toggleArea(id) { const el=document.getElementById(id); el.style.display=el.style.display==='block'?'none':'block'; }
         function enviarZap(telefone, nome, data, ministerio) { if(!telefone) return toast("Servo sem telefone cadastrado!", "erro"); const nums = telefone.replace(/\D/g, ""); const msg = `Olá ${nome}, a Paz! 🙏%0A%0AVocê foi escalado(a) para o ministério *${ministerio}* no dia *${data}*.%0A%0APor favor, confirme sua presença.`; window.open(`https://wa.me/55${nums}?text=${msg}`, '_blank'); }
 
-        // --- LIXEIRA ---
+        // --- LIXEIRA LÓGICA ---
         async function abrirLixeira(tipo) {
             const area = document.getElementById('areaLixeira');
             const lista = document.getElementById('listaLixeira');
+            // Fecha outros para não bagunçar
+            document.getElementById('areaGerenciar').style.display = 'none';
             area.style.display = 'block';
             lista.innerHTML = "Carregando...";
-            
-            // Fecha outros modais para não bagunçar
-            document.getElementById('areaGerenciar').style.display='none';
             
             try {
                 const res = await fetch(`/lixeira/${tipo}`);
                 const dados = await res.json();
                 lista.innerHTML = "";
                 
-                if(dados.length === 0) { lista.innerHTML = "<p>Lixeira vazia! 👏</p>"; return; }
+                if(dados.length === 0) { lista.innerHTML = "<p style='text-align:center'>Lixeira vazia!</p>"; return; }
 
                 dados.forEach(item => {
-                    const texto = item.nome || item.titulo; // Serve para Servo ou Evento
+                    const txt = item.nome || item.titulo;
                     const info = item.ministerio || item.data;
                     lista.innerHTML += `
-                        <div class="item-lixo">
-                            <div><b>${texto}</b><br><small>${info}</small></div>
-                            <div>
-                                <button class="btn-restaurar" onclick="restaurarItem('${tipo}', ${item.id})">🔄 Restaurar</button>
-                                <button class="btn-acao" onclick="excluirDefinitivo('${tipo}', ${item.id})" style="color:red">💀</button>
-                            </div>
-                        </div>`;
+                    <div class="item-lixo">
+                        <div><b>${txt}</b><br><small>${info}</small></div>
+                        <div>
+                            <button class="btn-restaurar" onclick="restaurarItem('${tipo}', ${item.id})">♻️ Restaurar</button>
+                            <button class="btn-acao" onclick="excluirDefinitivo('${tipo}', ${item.id})" style="color:red">💀</button>
+                        </div>
+                    </div>`;
                 });
-            } catch(e) { lista.innerHTML = "Erro ao carregar lixo."; }
+            } catch(e) { lista.innerHTML = "Erro de conexão."; }
         }
 
         async function restaurarItem(tipo, id) {
-            const senha = prompt("🔒 Senha para Restaurar:"); if(!senha) return;
+            const senha = prompt("Senha para restaurar:"); if(!senha) return;
             const res = await fetch(`/restaurar/${tipo}/${id}`, { method: 'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({senha}) });
             if(res.ok) { toast("Restaurado!"); abrirLixeira(tipo); if(tipo==='servos') carregarDadosIniciais(); else carregarEventosDoMes(); }
             else toast("Senha incorreta", "erro");
         }
 
         async function excluirDefinitivo(tipo, id) {
-            if(!confirm("⚠️ ATENÇÃO: Isso apaga para SEMPRE! Tem certeza?")) return;
-            const senha = prompt("🔒 Senha Mestra:"); if(!senha) return;
+            if(!confirm("⚠️ ISSO APAGA PARA SEMPRE! Confirmar?")) return;
+            const senha = prompt("Senha Mestra:"); if(!senha) return;
             const res = await fetch(`/lixeira/${tipo}/${id}`, { method: 'DELETE', headers:{'Content-Type':'application/json'}, body:JSON.stringify({senha}) });
-            if(res.ok) { toast("Apagado para sempre."); abrirLixeira(tipo); } else toast("Erro", "erro");
+            if(res.ok) { toast("Apagado do banco."); abrirLixeira(tipo); }
+            else toast("Erro", "erro");
         }
 
         // --- IMPORTADOR ---
@@ -248,12 +249,36 @@
             document.getElementById('txtImportar').value = ""; toggleArea('areaImportar'); carregarDadosIniciais();
         }
 
-        // --- FUNÇÕES PADRÃO (MANTIDAS) ---
+        // --- FUNÇÕES PADRÃO ---
         async function carregarDadosIniciais(){try{const r=await fetch('/servos');todosServos=await r.json();}catch(e){}}
         async function salvarNovoServo(){ const n=document.getElementById('novoNome').value;const m=document.getElementById('novoMinisterio').value;const t=document.getElementById('novoTelefone').value; if(!n)return toast("Preencha o nome","erro"); setLoading('btnSalvarServo', true); await fetch('/servos',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:n,ministerio:m,telefone:t})}); setLoading('btnSalvarServo', false, "Salvar Cadastro"); toast("Cadastro Realizado!");toggleArea('areaCadastro');carregarDadosIniciais(); }
         async function carregarEscalaDoDia(){ const d=document.getElementById('dataEscala').value;if(!d)return;document.getElementById('dataTitulo').innerText=d.split('-').reverse().join('/'); const div=document.getElementById('listaEscalados');div.innerHTML="Carregando..."; const r=await fetch(`/escalas/${d}`);const l=await r.json();div.innerHTML=""; if(l.length === 0) { div.innerHTML = "<p style='text-align:center;color:#999'>Ninguém escalado.</p>"; return; } l.forEach(i=>{ const dataFormatada = d.split('-').reverse().join('/'); let btnZap = ""; if(i.servos?.telefone) { btnZap = `<button class="btn-zap" onclick="enviarZap('${i.servos.telefone}', '${i.servos.nome}', '${dataFormatada}', '${i.ministerio_nome}')">📱 Avisar</button>`; } div.innerHTML+=` <div class='card-escala'> <div><b>${i.servos?.nome}</b><br><small>${i.ministerio_nome}</small></div> <div style="display:flex; align-items:center; gap:10px;"> ${btnZap} <button class='btn-acao' onclick='delEscala(${i.id})' style="color:red">❌</button> </div> </div>` }) }
-        function carregarParaGerenciar(){const d=document.getElementById('listaGerencia');d.innerHTML="";todosServos.forEach(s=>d.innerHTML+=`<div style='display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #eee; background:#FAFAFA; margin-bottom:5px; border-radius:5px'><div><b>${s.nome}</b><br><small>${s.ministerio}</small><br><small style='color:green'>${s.telefone || "Sem Zap"}</small></div><button onclick="editarServo(${s.id},'${s.nome}','${s.ministerio}','${s.telefone||''}')">✏️</button></div>`)}
+        
+        function carregarParaGerenciar(){
+            const d=document.getElementById('listaGerencia');d.innerHTML="";
+            todosServos.forEach(s=> {
+                d.innerHTML+=`
+                <div style='display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #eee; background:#FAFAFA; margin-bottom:5px; border-radius:5px'>
+                    <div><b>${s.nome}</b><br><small>${s.ministerio}</small><br><small style='color:green'>${s.telefone || "Sem Zap"}</small></div>
+                    <div>
+                        <button onclick="editarServo(${s.id},'${s.nome}','${s.ministerio}','${s.telefone||''}')" class="btn-mini" style="margin-right:5px">✏️</button>
+                        <button onclick="excluirServo(${s.id})" class="btn-mini" style="background:#FFEBEE; color:red">🗑️</button>
+                    </div>
+                </div>`;
+            });
+        }
+        
         async function editarServo(id,n,m,t){ const nn=prompt("Nome:",n); if(nn===null) return; const nm=prompt("Min:",m); if(nm===null) return; const nt=prompt("WhatsApp:",t); if(nt===null) return; const s=prompt("Senha:");if(!s)return; await fetch(`/servos/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:nn,ministerio:nm,telefone:nt,senha:s})}); carregarDadosIniciais(); toast("Atualizado!"); }
+        
+        // EXCLUIR SERVO (MANDA PARA LIXEIRA)
+        async function excluirServo(id) {
+            if(!confirm("Mover servo para a Lixeira?")) return;
+            const senha = prompt("Senha:"); if(!senha) return;
+            const res = await fetch(`/servos-cadastro/${id}`, { method: 'DELETE', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ senha }) });
+            if(res.ok) { toast("Enviado para Lixeira!"); carregarDadosIniciais().then(carregarParaGerenciar); } 
+            else toast("Erro", "erro");
+        }
+
         function filtrarListaPorMinisterio(){const m=document.getElementById('selectMinisterio').value;const c=document.getElementById('containerChecklist');c.innerHTML="";if(!m)return;const l=todosServos.filter(s=>m==="Geral"?true:s.ministerio&&s.ministerio.includes(m));if(l.length===0)c.innerHTML="<p style='text-align:center'>Vazio</p>";l.forEach(s=>{c.innerHTML+=`<div class="checklist-item"><label style='display:flex;width:100%'><input type='checkbox' value='${s.id}' class='chk-servo'><span style='flex:1'>${s.nome}</span><small>(${s.ministerio})</small></label></div>`})}
         function marcarTodos(b){document.querySelectorAll('.chk-servo').forEach(c=>c.checked=b)}
         document.getElementById('formEscala').onsubmit=async(e)=>{e.preventDefault();const i=Array.from(document.querySelectorAll('.chk-servo:checked')).map(c=>c.value);if(i.length===0)return toast("Selecione alguém!","erro");const s=prompt("🔒 Senha:");if(!s)return;setLoading('btnSalvarEscala',true);const r=await fetch('/escalar-multiplo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({servo_ids:i,data:document.getElementById('dataEscala').value,ministerio_nome:document.getElementById('selectMinisterio').value,responsavel:document.getElementById('inputResponsavel').value,senha:s})});const j=await r.json();setLoading('btnSalvarEscala',false,"Confirmar Escala");if(r.ok){toast(j.mensagem);carregarEscalaDoDia();marcarTodos(false);}else toast(j.erro,"erro");}

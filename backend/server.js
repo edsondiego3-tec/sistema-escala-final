@@ -4,7 +4,7 @@ const path = require('path');
 const supabase = require('./database');
 
 const app = express();
-const SENHA_COORDENADOR = 'admin123'; // <--- SUA SENHA
+const SENHA_COORDENADOR = 'admin123'; 
 
 app.use(express.json());
 app.use(cors());
@@ -13,11 +13,10 @@ app.use(express.static(path.join(__dirname, '../frontend')));
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../frontend/index.html')));
 
 async function gravarHistorico(acao, detalhes, responsavel) {
-    try { await supabase.from('historico').insert([{ acao, detalhes, responsavel }]); } 
-    catch (e) { console.error(e); }
+    try { await supabase.from('historico').insert([{ acao, detalhes, responsavel }]); } catch (e) {}
 }
 
-// --- ROTAS DE SERVOS ---
+// --- SERVOS (Agora com Telefone) ---
 app.get('/servos', async (req, res) => {
     const { data, error } = await supabase.from('servos').select('*').order('nome');
     if (error) return res.status(500).json({ erro: error.message });
@@ -25,9 +24,9 @@ app.get('/servos', async (req, res) => {
 });
 
 app.post('/servos', async (req, res) => {
-    const { nome, ministerio } = req.body;
+    const { nome, ministerio, telefone } = req.body; // Recebe telefone
     try {
-        const { error } = await supabase.from('servos').insert([{ nome, ministerio }]);
+        const { error } = await supabase.from('servos').insert([{ nome, ministerio, telefone }]);
         if (error) throw error;
         res.json({ message: "Cadastrado!" });
     } catch (e) { res.status(500).json({ erro: e.message }); }
@@ -35,10 +34,10 @@ app.post('/servos', async (req, res) => {
 
 app.put('/servos/:id', async (req, res) => {
     const { id } = req.params;
-    const { nome, ministerio, senha } = req.body;
+    const { nome, ministerio, telefone, senha } = req.body; // Recebe telefone
     if (senha !== SENHA_COORDENADOR) return res.status(403).json({ erro: "🔒 Senha incorreta!" });
     try {
-        const { error } = await supabase.from('servos').update({ nome, ministerio }).eq('id', id);
+        const { error } = await supabase.from('servos').update({ nome, ministerio, telefone }).eq('id', id);
         if (error) throw error;
         res.json({ message: "Atualizado!" });
     } catch (e) { res.status(500).json({ erro: e.message }); }
@@ -56,9 +55,10 @@ app.delete('/servos-cadastro/:id', async (req, res) => {
     } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
-// --- ROTAS DE ESCALAS ---
+// --- ESCALAS (Traz o telefone junto) ---
 app.get('/escalas/:data', async (req, res) => {
-    const { data: lista, error } = await supabase.from('escalas').select('*, servos(nome)').eq('data', req.params.data);
+    // Busca o telefone do servo na hora de montar a escala
+    const { data: lista, error } = await supabase.from('escalas').select('*, servos(nome, telefone)').eq('data', req.params.data);
     res.json(lista || []);
 });
 
@@ -76,7 +76,6 @@ app.post('/escalar-multiplo', async (req, res) => {
             }
         } catch (e) {}
     }
-    if (salvos > 0) await gravarHistorico('Escala em Massa', `${salvos} em ${ministerio_nome}`, responsavel);
     res.json({ mensagem: `Sucesso! ${salvos} escalados.` });
 });
 
@@ -88,18 +87,15 @@ app.delete('/escalas/:id', async (req, res) => {
     res.json({ message: "Excluído!" });
 });
 
-// --- NOVO: ROTAS DO CALENDÁRIO (EVENTOS) ---
+// --- CALENDÁRIO ---
 app.get('/eventos', async (req, res) => {
-    // Pega todos os eventos ordenados por data
     const { data, error } = await supabase.from('eventos').select('*').order('data');
-    if (error) return res.status(500).json({ erro: error.message });
-    res.json(data);
+    res.json(data || []);
 });
 
 app.post('/eventos', async (req, res) => {
     const { titulo, data, ministerio, senha } = req.body;
     if (senha !== SENHA_COORDENADOR) return res.status(403).json({ erro: "🔒 Senha incorreta!" });
-
     try {
         const { error } = await supabase.from('eventos').insert([{ titulo, data, ministerio }]);
         if (error) throw error;
@@ -111,12 +107,7 @@ app.delete('/eventos/:id', async (req, res) => {
     const { id } = req.params;
     const { senha } = req.body;
     if (senha !== SENHA_COORDENADOR) return res.status(403).json({ erro: "🔒 Senha incorreta!" });
-
-    try {
-        const { error } = await supabase.from('eventos').delete().eq('id', id);
-        if (error) throw error;
-        res.json({ message: "Evento apagado!" });
-    } catch (e) { res.status(500).json({ erro: e.message }); }
+    try { await supabase.from('eventos').delete().eq('id', id); res.json({ message: "Apagado!" }); } catch (e) { res.status(500).json({ erro: e.message }); }
 });
 
 const port = process.env.PORT || 3000;

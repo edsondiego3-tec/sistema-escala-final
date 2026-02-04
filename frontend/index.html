@@ -11,11 +11,7 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
     <style>
-        :root {
-            --cor-primaria: #5D4037; --cor-secundaria: #8D6E63;
-            --cor-fundo: #EFEBE9; --cor-texto: #3E2723;
-            --cor-branco: #FFFFFF; --cor-sucesso: #2E7D32; --cor-aviso: #FBC02D; --cor-erro: #D32F2F;
-        }
+        :root { --cor-primaria: #5D4037; --cor-secundaria: #8D6E63; --cor-fundo: #EFEBE9; --cor-texto: #3E2723; --cor-branco: #FFFFFF; --cor-sucesso: #2E7D32; --cor-aviso: #FBC02D; --cor-erro: #D32F2F; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Roboto', sans-serif; background-color: var(--cor-fundo); color: var(--cor-texto); display: flex; justify-content: center; min-height: 100vh; padding-bottom: 80px;}
         .app-container { background: var(--cor-branco); width: 100%; max-width: 900px; box-shadow: 0 4px 20px rgba(93,64,55,0.15); min-height: 100vh; display: flex; flex-direction: column; }
@@ -34,8 +30,12 @@
         .btn-salvar { width: 100%; padding: 15px; background-color: var(--cor-primaria); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 20px; font-size: 1rem; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .btn-mini { padding: 8px 15px; font-size: 0.85rem; background: #D7CCC8; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .btn-zap { background-color: #25D366; color: white; border: none; padding: 6px 10px; border-radius: 5px; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; font-size: 0.8rem; }
-        #areaImportar { display:none; background:#E3F2FD; border-color:#2196F3; }
-        .import-box { width: 100%; height: 150px; padding: 10px; font-family: monospace; font-size: 0.85rem; border: 2px solid #90CAF9; border-radius: 8px; }
+        
+        /* ESTILOS DA LIXEIRA */
+        #areaLixeira { display: none; background: #FFEBEE; border: 2px solid #EF9A9A; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+        .item-lixo { display: flex; justify-content: space-between; align-items: center; background: white; padding: 10px; border-radius: 5px; margin-bottom: 5px; border-left: 4px solid #D32F2F; }
+        .btn-restaurar { background: #4CAF50; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; margin-right: 5px; }
+        
         #areaCalendarioPDF { background-color: #ffffff !important; padding: 10px; color: #000; width: 100%; }
         .logo-pdf { display: none; text-align: center; margin-bottom: 10px; } .logo-pdf img { height: 60px; }
         .calendario-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; background: var(--cor-primaria); color: white; padding: 12px; border-radius: 8px 8px 0 0; }
@@ -54,6 +54,8 @@
         .card-escala { background: #FFF; border-radius: 8px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; border-left: 5px solid var(--cor-primaria); box-shadow: 0 2px 5px rgba(0,0,0,0.05); align-items: center; }
         .btn-acao { border: none; background: none; font-size: 1.2rem; cursor: pointer; opacity: 0.7; }
         .esconder-na-foto { display: inline-block; }
+        #areaImportar { display:none; background:#E3F2FD; border-color:#2196F3; }
+        .import-box { width: 100%; height: 150px; padding: 10px; font-family: monospace; font-size: 0.85rem; border: 2px solid #90CAF9; border-radius: 8px; }
     </style>
 </head>
 <body>
@@ -68,9 +70,10 @@
 
         <main>
             <div id="tab-escala" class="view-section ativa">
-                <div style="display:flex; gap:10px; margin-bottom:15px">
+                <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap">
                     <button onclick="toggleArea('areaCadastro')" class="btn-mini" style="flex:1">➕ Novo Servo</button>
-                    <button onclick="toggleArea('areaGerenciar'); carregarParaGerenciar(false)" class="btn-mini" style="flex:1">⚙️ Gerenciar</button>
+                    <button onclick="toggleArea('areaGerenciar'); carregarParaGerenciar()" class="btn-mini" style="flex:1">⚙️ Gerenciar</button>
+                    <button onclick="abrirLixeira('servos')" class="btn-mini" style="flex:1; background:#FFCDD2; color:#D32F2F">🗑️ Lixeira</button>
                 </div>
 
                 <div id="areaCadastro" class="area-modal">
@@ -82,22 +85,25 @@
                 </div>
                 
                 <div id="areaGerenciar" class="area-modal">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:5px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px">
                         <h3>Gerenciar Equipe</h3>
-                        <div style="display:flex; gap:5px;">
-                            <button onclick="alternarModoLixeira()" id="btnLixeira" class="btn-mini" style="background:#FFAB91; color:#3E2723">🗑️ Ver Lixeira</button>
-                            <button onclick="toggleArea('areaImportar')" class="btn-mini" style="background:#2196F3; color:white">📤 Importar</button>
-                        </div>
+                        <button onclick="toggleArea('areaImportar')" class="btn-mini" style="background:#2196F3; color:white">📤 Importar Lista</button>
                     </div>
-
                     <div id="areaImportar" class="area-modal" style="border:none; padding:10px; margin-bottom:10px;">
                         <h4>Importador Turbo 🚀</h4>
-                        <textarea id="txtImportar" class="import-box" placeholder="Cole sua lista aqui (Nome, Telefone)..."></textarea>
-                        <button onclick="processarImportacao()" class="btn-mini" style="background:#4CAF50; color:white; width:100%; margin-top:5px">Processar e Salvar</button>
+                        <textarea id="txtImportar" class="import-box" placeholder="Nome, Telefone"></textarea>
+                        <button onclick="processarImportacao()" class="btn-mini" style="background:#4CAF50; color:white; width:100%; margin-top:5px">Processar</button>
                     </div>
-
                     <input type="text" id="buscaGerencia" placeholder="Buscar..." onkeyup="filtrarGerencia()">
                     <div id="listaGerencia" style="max-height:200px;overflow-y:auto; margin-top:10px"></div>
+                </div>
+
+                <div id="areaLixeira" class="area-modal" style="display:none; background:#FFEBEE;">
+                    <div style="display:flex; justify-content:space-between;">
+                        <h3 style="color:#D32F2F">Lixeira (Itens Excluídos)</h3>
+                        <button onclick="document.getElementById('areaLixeira').style.display='none'" class="btn-mini">Fechar</button>
+                    </div>
+                    <div id="listaLixeira" style="max-height:200px; overflow-y:auto; margin-top:10px">Carregando...</div>
                 </div>
 
                 <form id="formEscala">
@@ -109,4 +115,162 @@
                         <option value="Geral">Todos</option>
                         <option value="Música">Música</option>
                         <option value="Comunicação">Comunicação</option>
-                        <option value="Acolhida">Acol
+                        <option value="Acolhida">Acolhida</option>
+                        <option value="Pregação">Pregação</option>
+                        <option value="Intercessão">Intercessão</option>
+                        <option value="Crianças">Crianças</option>
+                        <option value="Coordenação">Coordenação</option>
+                        <option value="Promoção Humana">Promoção Humana</option>
+                        <option value="Jovem">Jovem</option>
+                        <option value="Formação">Formação</option>
+                        <option value="Famílias">Famílias</option>
+                    </select>
+                    <div class="checklist-container" id="containerChecklist"><p style="text-align:center;color:#999;padding:10px">Selecione uma função acima...</p></div>
+                    <div style="margin-top:5px"><button type="button" class="btn-mini" onclick="marcarTodos(true)">Todos</button> <button type="button" class="btn-mini" onclick="marcarTodos(false)">Nenhum</button></div>
+                    <button type="submit" id="btnSalvarEscala" class="btn-salvar">Confirmar Escala</button>
+                </form>
+                <div id="areaParaImagem" style="background:white;padding:10px;margin-top:20px;border:1px solid #eee;border-radius:8px">
+                    <h3 style="text-align:center;color:#5D4037;border-bottom:2px solid #5D4037;margin-bottom:10px">ESCALA DO DIA <span id="dataTitulo">--/--</span></h3>
+                    <div id="listaEscalados"></div>
+                </div>
+                <button onclick="gerarImagem()" class="btn-salvar" style="background:var(--cor-sucesso);margin-top:10px">📸 Baixar Imagem (JPG)</button>
+            </div>
+
+            <div id="tab-calendario" class="view-section">
+                <div id="areaCalendarioPDF">
+                    <div class="logo-pdf" id="logoPdfHeader"><img src="logo.png" alt="Logo"></div>
+                    <div class="calendario-header">
+                        <button class="btn-mini esconder-na-foto" onclick="mudarMes(-1)">◀</button>
+                        <h2 id="mesAnoDisplay" style="margin:0; text-transform:uppercase; letter-spacing:1px; font-size:1.2rem">Mês / Ano</h2>
+                        <button class="btn-mini esconder-na-foto" onclick="mudarMes(1)">▶</button>
+                    </div>
+                    <div class="grid-dias"><div>DOM</div><div>SEG</div><div>TER</div><div>QUA</div><div>QUI</div><div>SEX</div><div>SÁB</div></div>
+                    <div id="calendarioGrid" class="grid-calendario"></div>
+                </div>
+                <button id="btnBaixarPDF" onclick="gerarPDFCalendario()" class="btn-salvar" style="background:#D32F2F; margin-top:10px">📄 Baixar Calendário (PDF A4)</button>
+                
+                <div style="margin-top:10px; text-align:right">
+                    <button onclick="abrirLixeira('eventos')" class="btn-mini" style="background:#FFCDD2; color:#D32F2F">🗑️ Lixeira de Eventos</button>
+                </div>
+
+                <div id="modalEvento" class="area-modal" style="margin-top:20px;">
+                    <h3>Novo Compromisso</h3>
+                    <div style="display:flex; gap:10px;"><div style="flex:1"><label>Início:</label><input type="date" id="evDataInicio" readonly style="background:#EEE"></div><div style="flex:1"><label>Final:</label><input type="date" id="evDataFim"></div></div>
+                    <label>Título:</label><input type="text" id="evTitulo" list="sugestoesTitulos" placeholder="Digite ou selecione..."><datalist id="sugestoesTitulos"><option value="SANTA MISSA"><option value="REUNIÃO"><option value="RETIRO"><option value="FORMAÇÃO"><option value="GRUPO DE ORAÇÃO"><option value="ADORAÇÃO"><option value="VIGÍLIA"></datalist>
+                    <label>Ministério:</label><select id="evMinisterio"><option value="Geral">Geral</option><option value="Música">Música</option><option value="Acolhida">Acolhida</option><option value="Pregação">Pregação</option><option value="Coordenação">Coordenação</option><option value="Outros">Outros</option></select>
+                    <div style="display:flex;gap:10px;margin-top:15px"><button onclick="fecharModalEvento()" class="btn-mini" style="background:#999;flex:1">Cancelar</button><button onclick="adicionarAFila()" class="btn-mini" style="background:var(--cor-aviso);color:#3E2723;flex:1">➕ Adicionar à Lista</button></div>
+                </div>
+                <div id="listaEventosDia" style="margin-top:20px"></div>
+            </div>
+        </main>
+        
+        <div id="barraSalvar"><span id="txtPendentes">0 alterações</span><button id="btnSalvarFila" onclick="processarFila()" class="btn-mini" style="background:#4CAF50; color:white; font-size:1rem; padding:8px 15px">💾 SALVAR TUDO</button></div>
+    </div>
+
+    <script>
+        let todosServos = []; let eventosMes = []; let filaPendentes = []; let dataCalendario = new Date();
+        function toast(msg, tipo = "sucesso") { const cor = tipo === "sucesso" ? "var(--cor-sucesso)" : "var(--cor-erro)"; Toastify({ text: msg, duration: 3000, gravity: "top", position: "right", style: { background: cor, borderRadius: "8px" } }).showToast(); }
+        function setLoading(btnId, isLoading, textNormal = "Salvar") { const btn = document.getElementById(btnId); if(!btn) return; if(isLoading) { btn.disabled = true; btn.innerText = "⏳ Processando..."; btn.style.opacity = "0.7"; } else { btn.disabled = false; btn.innerText = textNormal; btn.style.opacity = "1"; } }
+        function mudarAba(id, el) { document.querySelectorAll('.view-section').forEach(v => v.classList.remove('ativa')); document.getElementById(id).classList.add('ativa'); document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa')); el.classList.add('ativa'); if(id==='tab-calendario') carregarEventosDoMes(); }
+        function toggleArea(id) { const el=document.getElementById(id); el.style.display=el.style.display==='block'?'none':'block'; }
+        function enviarZap(telefone, nome, data, ministerio) { if(!telefone) return toast("Servo sem telefone cadastrado!", "erro"); const nums = telefone.replace(/\D/g, ""); const msg = `Olá ${nome}, a Paz! 🙏%0A%0AVocê foi escalado(a) para o ministério *${ministerio}* no dia *${data}*.%0A%0APor favor, confirme sua presença.`; window.open(`https://wa.me/55${nums}?text=${msg}`, '_blank'); }
+
+        // --- LIXEIRA ---
+        async function abrirLixeira(tipo) {
+            const area = document.getElementById('areaLixeira');
+            const lista = document.getElementById('listaLixeira');
+            area.style.display = 'block';
+            lista.innerHTML = "Carregando...";
+            
+            // Fecha outros modais para não bagunçar
+            document.getElementById('areaGerenciar').style.display='none';
+            
+            try {
+                const res = await fetch(`/lixeira/${tipo}`);
+                const dados = await res.json();
+                lista.innerHTML = "";
+                
+                if(dados.length === 0) { lista.innerHTML = "<p>Lixeira vazia! 👏</p>"; return; }
+
+                dados.forEach(item => {
+                    const texto = item.nome || item.titulo; // Serve para Servo ou Evento
+                    const info = item.ministerio || item.data;
+                    lista.innerHTML += `
+                        <div class="item-lixo">
+                            <div><b>${texto}</b><br><small>${info}</small></div>
+                            <div>
+                                <button class="btn-restaurar" onclick="restaurarItem('${tipo}', ${item.id})">🔄 Restaurar</button>
+                                <button class="btn-acao" onclick="excluirDefinitivo('${tipo}', ${item.id})" style="color:red">💀</button>
+                            </div>
+                        </div>`;
+                });
+            } catch(e) { lista.innerHTML = "Erro ao carregar lixo."; }
+        }
+
+        async function restaurarItem(tipo, id) {
+            const senha = prompt("🔒 Senha para Restaurar:"); if(!senha) return;
+            const res = await fetch(`/restaurar/${tipo}/${id}`, { method: 'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({senha}) });
+            if(res.ok) { toast("Restaurado!"); abrirLixeira(tipo); if(tipo==='servos') carregarDadosIniciais(); else carregarEventosDoMes(); }
+            else toast("Senha incorreta", "erro");
+        }
+
+        async function excluirDefinitivo(tipo, id) {
+            if(!confirm("⚠️ ATENÇÃO: Isso apaga para SEMPRE! Tem certeza?")) return;
+            const senha = prompt("🔒 Senha Mestra:"); if(!senha) return;
+            const res = await fetch(`/lixeira/${tipo}/${id}`, { method: 'DELETE', headers:{'Content-Type':'application/json'}, body:JSON.stringify({senha}) });
+            if(res.ok) { toast("Apagado para sempre."); abrirLixeira(tipo); } else toast("Erro", "erro");
+        }
+
+        // --- IMPORTADOR ---
+        async function processarImportacao() {
+            const texto = document.getElementById('txtImportar').value;
+            if(!texto.trim()) return toast("Cole a lista primeiro!", "erro");
+            const linhas = texto.split('\n');
+            const senha = prompt(`Processar ${linhas.length} nomes?\n🔒 Digite a Senha:`);
+            if(!senha) return;
+            let criados = 0; let atualizados = 0;
+            toast("Iniciando...");
+            for(const linha of linhas) {
+                if(!linha.includes(',')) continue; 
+                const partes = linha.split(',');
+                const nomeImport = partes[0].trim();
+                const foneImport = partes[1].trim();
+                const servoExistente = todosServos.find(s => s.nome.toLowerCase() === nomeImport.toLowerCase());
+                if(servoExistente) {
+                    await fetch(`/servos/${servoExistente.id}`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ nome: servoExistente.nome, ministerio: servoExistente.ministerio, telefone: foneImport, senha: senha }) });
+                    atualizados++;
+                } else {
+                    await fetch('/servos', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ nome: nomeImport, ministerio: "Outros", telefone: foneImport }) });
+                    criados++;
+                }
+            }
+            toast(`Concluído! ${criados} novos, ${atualizados} atualizados.`);
+            document.getElementById('txtImportar').value = ""; toggleArea('areaImportar'); carregarDadosIniciais();
+        }
+
+        // --- FUNÇÕES PADRÃO (MANTIDAS) ---
+        async function carregarDadosIniciais(){try{const r=await fetch('/servos');todosServos=await r.json();}catch(e){}}
+        async function salvarNovoServo(){ const n=document.getElementById('novoNome').value;const m=document.getElementById('novoMinisterio').value;const t=document.getElementById('novoTelefone').value; if(!n)return toast("Preencha o nome","erro"); setLoading('btnSalvarServo', true); await fetch('/servos',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:n,ministerio:m,telefone:t})}); setLoading('btnSalvarServo', false, "Salvar Cadastro"); toast("Cadastro Realizado!");toggleArea('areaCadastro');carregarDadosIniciais(); }
+        async function carregarEscalaDoDia(){ const d=document.getElementById('dataEscala').value;if(!d)return;document.getElementById('dataTitulo').innerText=d.split('-').reverse().join('/'); const div=document.getElementById('listaEscalados');div.innerHTML="Carregando..."; const r=await fetch(`/escalas/${d}`);const l=await r.json();div.innerHTML=""; if(l.length === 0) { div.innerHTML = "<p style='text-align:center;color:#999'>Ninguém escalado.</p>"; return; } l.forEach(i=>{ const dataFormatada = d.split('-').reverse().join('/'); let btnZap = ""; if(i.servos?.telefone) { btnZap = `<button class="btn-zap" onclick="enviarZap('${i.servos.telefone}', '${i.servos.nome}', '${dataFormatada}', '${i.ministerio_nome}')">📱 Avisar</button>`; } div.innerHTML+=` <div class='card-escala'> <div><b>${i.servos?.nome}</b><br><small>${i.ministerio_nome}</small></div> <div style="display:flex; align-items:center; gap:10px;"> ${btnZap} <button class='btn-acao' onclick='delEscala(${i.id})' style="color:red">❌</button> </div> </div>` }) }
+        function carregarParaGerenciar(){const d=document.getElementById('listaGerencia');d.innerHTML="";todosServos.forEach(s=>d.innerHTML+=`<div style='display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #eee; background:#FAFAFA; margin-bottom:5px; border-radius:5px'><div><b>${s.nome}</b><br><small>${s.ministerio}</small><br><small style='color:green'>${s.telefone || "Sem Zap"}</small></div><button onclick="editarServo(${s.id},'${s.nome}','${s.ministerio}','${s.telefone||''}')">✏️</button></div>`)}
+        async function editarServo(id,n,m,t){ const nn=prompt("Nome:",n); if(nn===null) return; const nm=prompt("Min:",m); if(nm===null) return; const nt=prompt("WhatsApp:",t); if(nt===null) return; const s=prompt("Senha:");if(!s)return; await fetch(`/servos/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:nn,ministerio:nm,telefone:nt,senha:s})}); carregarDadosIniciais(); toast("Atualizado!"); }
+        function filtrarListaPorMinisterio(){const m=document.getElementById('selectMinisterio').value;const c=document.getElementById('containerChecklist');c.innerHTML="";if(!m)return;const l=todosServos.filter(s=>m==="Geral"?true:s.ministerio&&s.ministerio.includes(m));if(l.length===0)c.innerHTML="<p style='text-align:center'>Vazio</p>";l.forEach(s=>{c.innerHTML+=`<div class="checklist-item"><label style='display:flex;width:100%'><input type='checkbox' value='${s.id}' class='chk-servo'><span style='flex:1'>${s.nome}</span><small>(${s.ministerio})</small></label></div>`})}
+        function marcarTodos(b){document.querySelectorAll('.chk-servo').forEach(c=>c.checked=b)}
+        document.getElementById('formEscala').onsubmit=async(e)=>{e.preventDefault();const i=Array.from(document.querySelectorAll('.chk-servo:checked')).map(c=>c.value);if(i.length===0)return toast("Selecione alguém!","erro");const s=prompt("🔒 Senha:");if(!s)return;setLoading('btnSalvarEscala',true);const r=await fetch('/escalar-multiplo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({servo_ids:i,data:document.getElementById('dataEscala').value,ministerio_nome:document.getElementById('selectMinisterio').value,responsavel:document.getElementById('inputResponsavel').value,senha:s})});const j=await r.json();setLoading('btnSalvarEscala',false,"Confirmar Escala");if(r.ok){toast(j.mensagem);carregarEscalaDoDia();marcarTodos(false);}else toast(j.erro,"erro");}
+        async function delEscala(id){const s=prompt("Senha:");if(!s)return;const r=await fetch(`/escalas/${id}`,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({senha:s})});if(r.ok){carregarEscalaDoDia();toast("Excluído!");}else toast("Erro","erro");}
+        function gerarImagem(){const a=document.getElementById('areaParaImagem');document.querySelectorAll('.btn-acao,.btn-zap').forEach(b=>b.style.display='none');html2canvas(a).then(c=>{const l=document.createElement('a');l.download='escala.jpg';l.href=c.toDataURL();l.click();document.querySelectorAll('.btn-acao,.btn-zap').forEach(b=>b.style.display='inline-flex');toast("Imagem baixada!");})}
+        async function carregarEventosDoMes() { try { const res = await fetch('/eventos'); eventosMes = await res.json(); renderizarCalendario(); } catch(e) {} }
+        function renderizarCalendario() { const grid = document.getElementById('calendarioGrid'); grid.innerHTML = ""; const ano = dataCalendario.getFullYear(); const mes = dataCalendario.getMonth(); const meses = ["JANEIRO","FEVEREIRO","MARÇO","ABRIL","MAIO","JUNHO","JULHO","AGOSTO","SETEMBRO","OUTUBRO","NOVEMBRO","DEZEMBRO"]; document.getElementById('mesAnoDisplay').innerText = `${meses[mes]} ${ano}`; const primeiroDia = new Date(ano, mes, 1).getDay(); const ultimoDia = new Date(ano, mes + 1, 0).getDate(); for(let i=0; i<primeiroDia; i++) grid.innerHTML += `<div style="background:#EEE"></div>`; const hoje = new Date().toISOString().split('T')[0]; for(let dia=1; dia<=ultimoDia; dia++) { const dataFmt = `${ano}-${String(mes+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`; const salvos = eventosMes.filter(e => e.data === dataFmt); const pendentes = filaPendentes.filter(e => e.data === dataFmt); let html = ""; salvos.forEach(ev => html += `<div class="evento-chip">${ev.titulo}</div>`); pendentes.forEach(ev => html += `<div class="evento-chip pendente">⏳ ${ev.titulo}</div>`); const cls = dataFmt === hoje ? 'dia-cal hoje' : 'dia-cal'; const div = document.createElement('div'); div.className = cls; div.innerHTML = `<span class="dia-numero">${dia}</span>${html}`; div.onclick = () => abrirModalEvento(dataFmt); grid.appendChild(div); } }
+        function mudarMes(d) { dataCalendario.setMonth(dataCalendario.getMonth()+d); carregarEventosDoMes(); }
+        function gerarPDFCalendario() { const btn = document.getElementById('btnBaixarPDF'); setLoading('btnBaixarPDF', true, "Gerando PDF..."); const elemento = document.getElementById('areaCalendarioPDF'); const logo = document.getElementById('logoPdfHeader'); const botoes = document.querySelectorAll('.esconder-na-foto'); logo.style.display = 'block'; botoes.forEach(b => b.style.display = 'none'); const opt = { margin: 5, filename: `Calendario_${document.getElementById('mesAnoDisplay').innerText}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } }; setTimeout(() => { html2pdf().set(opt).from(elemento).save().then(() => { logo.style.display = 'none'; botoes.forEach(b => b.style.display = 'inline-block'); setLoading('btnBaixarPDF', false, "📄 Baixar Calendário (PDF A4)"); toast("PDF gerado!"); }).catch(err => { toast("Erro no PDF", "erro"); setLoading('btnBaixarPDF', false, "📄 Baixar Calendário (PDF A4)"); }); }, 200); }
+        function abrirModalEvento(d) { document.getElementById('modalEvento').style.display='block'; document.getElementById('evDataInicio').value = d; document.getElementById('evDataFim').value = ""; document.getElementById('evTitulo').value = ""; const div = document.getElementById('listaEventosDia'); div.innerHTML = "<h4>Neste dia:</h4>"; const salvos = eventosMes.filter(e => e.data === d); salvos.forEach(ev => div.innerHTML += `<div style="padding:5px;border-bottom:1px solid #ddd;display:flex;justify-content:space-between"><span>${ev.titulo}</span><button onclick="apagarEvento(${ev.id})" style="color:red;border:none;cursor:pointer">🗑️</button></div>`); const pends = filaPendentes.filter(e => e.data === d); pends.forEach((ev, idx) => div.innerHTML += `<div style="padding:5px;background:#FFF9C4;display:flex;justify-content:space-between"><span>⏳ ${ev.titulo}</span><small>Pendente</small></div>`); }
+        function fecharModalEvento() { document.getElementById('modalEvento').style.display='none'; }
+        function adicionarAFila() { const tit = document.getElementById('evTitulo').value; const ini = document.getElementById('evDataInicio').value; const fim = document.getElementById('evDataFim').value; const min = document.getElementById('evMinisterio').value; if(!tit) return toast("Digite o título!", "erro"); let tituloFinal = tit; if(min !== 'Geral') tituloFinal = `${tit} - ${min}`; let atual = new Date(ini); atual.setMinutes(atual.getMinutes()+atual.getTimezoneOffset()); let limite = fim ? new Date(fim) : new Date(ini); limite.setMinutes(limite.getMinutes()+limite.getTimezoneOffset()); if(limite < atual) return toast("Data final menor que início", "erro"); while(atual <= limite) { filaPendentes.push({ titulo: tituloFinal, data: atual.toISOString().split('T')[0], ministerio: min }); atual.setDate(atual.getDate()+1); } fecharModalEvento(); renderizarCalendario(); atualizarBarraSalvar(); toast("Na lista de espera!"); }
+        function atualizarBarraSalvar() { const barra = document.getElementById('barraSalvar'); if(filaPendentes.length > 0) { barra.style.display = 'flex'; document.getElementById('txtPendentes').innerText = `${filaPendentes.length} alterações`; } else { barra.style.display = 'none'; } }
+        async function processarFila() { if(filaPendentes.length === 0) return; const senha = prompt(`Salvar ${filaPendentes.length} eventos?\n🔒 Digite a Senha:`); if(!senha) return; setLoading('btnSalvarFila', true); let erros = 0; for(const ev of filaPendentes) { const res = await fetch('/eventos', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ...ev, senha }) }); if(!res.ok) erros++; } setLoading('btnSalvarFila', false, "💾 SALVAR TUDO"); if(erros > 0) toast(`${erros} falhas.`, "erro"); else toast("Tudo salvo!"); filaPendentes = []; atualizarBarraSalvar(); carregarEventosDoMes(); }
+        async function apagarEvento(id) { if(!confirm("Mover para Lixeira?")) return; const senha = prompt("🔒 Senha:"); if(!senha) return; const r = await fetch(`/eventos/${id}`, {method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({senha})}); if(r.ok) { const d=document.getElementById('evDataInicio').value; carregarEventosDoMes(); setTimeout(()=>abrirModalEvento(d),500); toast("Enviado para a Lixeira!"); } else toast("Erro", "erro"); }
+
+        window.onload = () => { carregarDadosIniciais(); };
+    </script>
+</body>
+</html>

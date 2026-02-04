@@ -13,16 +13,15 @@
         :root {
             --cor-primaria: #5D4037; --cor-secundaria: #8D6E63;
             --cor-fundo: #EFEBE9; --cor-texto: #3E2723;
-            --cor-branco: #FFFFFF; --cor-sucesso: #2E7D32;
+            --cor-branco: #FFFFFF; --cor-sucesso: #2E7D32; --cor-aviso: #FBC02D;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Roboto', sans-serif; background-color: var(--cor-fundo); color: var(--cor-texto); display: flex; justify-content: center; min-height: 100vh; padding-bottom: 50px;}
-        .app-container { background: var(--cor-branco); width: 100%; max-width: 800px; /* Aumentei um pouco para caber melhor na tela */ box-shadow: 0 4px 20px rgba(93,64,55,0.15); min-height: 100vh; display: flex; flex-direction: column; }
+        body { font-family: 'Roboto', sans-serif; background-color: var(--cor-fundo); color: var(--cor-texto); display: flex; justify-content: center; min-height: 100vh; padding-bottom: 80px;}
+        .app-container { background: var(--cor-branco); width: 100%; max-width: 900px; box-shadow: 0 4px 20px rgba(93,64,55,0.15); min-height: 100vh; display: flex; flex-direction: column; }
         
         header { background: white; padding: 15px; text-align: center; border-bottom: 4px solid var(--cor-primaria); }
         .logo-img { max-width: 150px; display: block; margin: 0 auto 5px auto; }
         
-        /* ABAS */
         .abas { display: flex; background: #D7CCC8; }
         .aba { flex: 1; padding: 15px; text-align: center; cursor: pointer; font-weight: bold; color: #5D4037; border-bottom: 3px solid transparent; }
         .aba.ativa { background: white; border-bottom: 3px solid var(--cor-primaria); color: var(--cor-primaria); }
@@ -32,59 +31,59 @@
         .view-section.ativa { display: block; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
 
-        /* INPUTS E BOTÕES */
         label { font-size: 0.8rem; color: var(--cor-secundaria); font-weight: 700; margin-bottom: 5px; display: block; text-transform: uppercase; margin-top: 15px;}
-        input, select { width: 100%; padding: 12px; border: 2px solid #D7CCC8; border-radius: 8px; font-size: 1rem; margin-bottom: 5px; background: #fff;}
+        input, select { width: 100%; padding: 10px; border: 2px solid #D7CCC8; border-radius: 8px; font-size: 0.95rem; margin-bottom: 5px; background: #fff;}
         .btn-salvar { width: 100%; padding: 15px; background-color: var(--cor-primaria); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 20px; font-size: 1rem; }
         .btn-mini { padding: 6px 12px; font-size: 0.8rem; background: #D7CCC8; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
         
         /* --- CALENDÁRIO --- */
-        /* Estilo específico para o PDF ficar bonito */
-        #areaCalendarioPDF {
-            background: white;
-            padding: 10px;
-            color: #000; /* Garante preto puro para impressão */
-        }
+        #areaCalendarioPDF { background: white; padding: 10px; color: #000; width: 100%; }
 
-        .calendario-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; background: var(--cor-primaria); color: white; padding: 15px; border-radius: 8px 8px 0 0; }
+        /* Logo invisível que só aparece no PDF */
+        .logo-pdf { display: none; text-align: center; margin-bottom: 10px; }
+        .logo-pdf img { height: 60px; }
+
+        .calendario-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; background: var(--cor-primaria); color: white; padding: 10px; border-radius: 6px 6px 0 0; }
         
         .grid-dias { 
-            display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; 
+            display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; 
             text-align: center; font-weight: bold; margin-bottom: 0; 
-            color: var(--cor-branco); background: var(--cor-secundaria); padding: 8px 0; font-size: 0.9rem;
+            color: var(--cor-branco); background: var(--cor-secundaria); padding: 5px 0; font-size: 0.8rem;
         }
         
         .grid-calendario { 
             display: grid; 
             grid-template-columns: repeat(7, 1fr); 
-            grid-auto-rows: 120px; /* Altura fixa boa para A4 */
-            gap: 2px; 
+            grid-auto-rows: 95px; /* Altura reduzida para caber no A4 sem cortar */
+            gap: 1px; 
             background: #D7CCC8; 
             border: 2px solid var(--cor-secundaria); 
         }
         
         .dia-cal { 
-            background: #FFF; 
-            padding: 4px; 
-            cursor: pointer; 
-            position: relative; 
-            font-size: 0.85rem; 
-            display: flex; 
-            flex-direction: column;
-            overflow: hidden; 
+            background: #FFF; padding: 2px; cursor: pointer; position: relative; 
+            font-size: 0.8rem; display: flex; flex-direction: column; overflow: hidden; 
         }
         .dia-cal:hover { background: #FAFAFA; overflow-y: auto; }
         .dia-cal.hoje { background: #E0F2F1; }
-        .dia-numero { font-weight: bold; display: block; margin-bottom: 4px; color: var(--cor-primaria); font-size: 1rem;}
+        .dia-numero { font-weight: bold; display: block; margin-bottom: 2px; padding-left: 4px; color: var(--cor-primaria); font-size: 0.9rem;}
         
         .evento-chip { 
-            font-size: 0.7rem; background: var(--cor-primaria); color: white; 
-            padding: 3px 5px; border-radius: 4px; margin-bottom: 2px; 
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
-            width: 100%; display: block;
+            font-size: 0.65rem; background: var(--cor-primaria); color: white; 
+            padding: 2px 4px; border-radius: 3px; margin-bottom: 1px; 
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; display: block;
+            line-height: 1.2;
+        }
+        /* Cor para eventos pendentes (não salvos) */
+        .pendente { background: var(--cor-aviso) !important; color: #3E2723 !important; }
+
+        /* Barra flutuante para salvar */
+        #barraSalvar {
+            display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: #3E2723; color: white; padding: 15px 30px; border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 1000; align-items: center; gap: 15px;
         }
 
-        /* MODAIS */
         .area-modal { display: none; background: #FFF8E1; padding: 15px; border: 2px dashed var(--cor-secundaria); border-radius: 10px; margin-bottom: 20px; }
         .checklist-container { border: 2px solid #D7CCC8; border-radius: 8px; max-height: 250px; overflow-y: auto; padding: 10px; background: #FAFAFA; }
         .checklist-item { display: flex; align-items: center; padding: 8px; border-bottom: 1px solid #eee; }
@@ -142,30 +141,32 @@
                         <option value="Formação">Formação</option>
                         <option value="Famílias">Famílias</option>
                     </select>
-
                     <div class="checklist-container" id="containerChecklist"><p style="text-align:center;color:#999;padding:10px">Selecione função...</p></div>
                     <div style="margin-top:5px"><button type="button" class="btn-mini" onclick="marcarTodos(true)">Todos</button> <button type="button" class="btn-mini" onclick="marcarTodos(false)">Nenhum</button></div>
                     <button type="submit" class="btn-salvar">Salvar Escala</button>
                 </form>
-
                 <div id="areaParaImagem" style="background:white;padding:10px;margin-top:20px;border:1px solid #eee;border-radius:8px">
                     <h3 style="text-align:center;color:#5D4037;border-bottom:2px solid #5D4037;margin-bottom:10px">ESCALA DO DIA <span id="dataTitulo">--/--</span></h3>
                     <div id="listaEscalados"></div>
                 </div>
-                <button onclick="gerarImagem()" class="btn-salvar" style="background:var(--cor-sucesso);margin-top:10px">📸 Baixar Escala (JPG)</button>
+                <button onclick="gerarImagem()" class="btn-salvar" style="background:var(--cor-sucesso);margin-top:10px">📸 Baixar Escala</button>
             </div>
 
             <div id="tab-calendario" class="view-section">
                 
                 <div id="areaCalendarioPDF">
+                    <div class="logo-pdf" id="logoPdfHeader">
+                        <img src="logo.png" alt="Logo">
+                    </div>
+
                     <div class="calendario-header">
                         <button class="btn-mini esconder-na-foto" onclick="mudarMes(-1)">◀</button>
-                        <h2 id="mesAnoDisplay" style="margin:0; text-transform:uppercase; letter-spacing:2px; font-size:1.5rem">Mês / Ano</h2>
+                        <h2 id="mesAnoDisplay" style="margin:0; text-transform:uppercase; letter-spacing:1px; font-size:1.2rem">Mês / Ano</h2>
                         <button class="btn-mini esconder-na-foto" onclick="mudarMes(1)">▶</button>
                     </div>
 
                     <div class="grid-dias">
-                        <div>DOMINGO</div><div>SEGUNDA</div><div>TERÇA</div><div>QUARTA</div><div>QUINTA</div><div>SEXTA</div><div>SÁBADO</div>
+                        <div>DOM</div><div>SEG</div><div>TER</div><div>QUA</div><div>QUI</div><div>SEX</div><div>SÁB</div>
                     </div>
                     <div id="calendarioGrid" class="grid-calendario"></div>
                 </div>
@@ -174,26 +175,18 @@
 
                 <div id="modalEvento" class="area-modal" style="margin-top:20px">
                     <h3>Novo Compromisso</h3>
-                    
                     <div style="display:flex; gap:10px;">
                         <div style="flex:1"><label>Início:</label><input type="date" id="evDataInicio" readonly style="background:#EEE"></div>
                         <div style="flex:1"><label>Final (Opcional):</label><input type="date" id="evDataFim"></div>
                     </div>
-                    <small style="color:#666; display:block; margin-bottom:10px">Se preencher a data final, o evento repetirá todos os dias.</small>
-
+                    
                     <label>Título:</label>
                     <input type="text" id="evTitulo" list="sugestoesTitulos" placeholder="Digite ou selecione...">
                     <datalist id="sugestoesTitulos">
-                        <option value="SANTA MISSA">
-                        <option value="REUNIÃO">
-                        <option value="RETIRO">
-                        <option value="FORMAÇÃO DE SERVOS">
-                        <option value="GRUPO DE ORAÇÃO">
-                        <option value="ADORAÇÃO">
-                        <option value="VIGÍLIA">
+                        <option value="SANTA MISSA"><option value="REUNIÃO"><option value="RETIRO"><option value="FORMAÇÃO"><option value="GRUPO DE ORAÇÃO"><option value="ADORAÇÃO"><option value="VIGÍLIA">
                     </datalist>
                     
-                    <label>Ministério Responsável:</label>
+                    <label>Ministério:</label>
                     <select id="evMinisterio">
                         <option value="Geral">Geral (Todos)</option>
                         <option value="Música">Música</option>
@@ -209,34 +202,45 @@
                         <option value="Famílias">Famílias</option>
                     </select>
 
-                    <div style="display:flex;gap:10px;margin-top:15px"><button onclick="fecharModalEvento()" class="btn-mini" style="background:#999;flex:1">Cancelar</button><button onclick="salvarEvento()" class="btn-mini" style="background:var(--cor-primaria);color:white;flex:1">Salvar</button></div>
+                    <div style="display:flex;gap:10px;margin-top:15px">
+                        <button onclick="fecharModalEvento()" class="btn-mini" style="background:#999;flex:1">Cancelar</button>
+                        <button onclick="adicionarAFila()" class="btn-mini" style="background:var(--cor-aviso);color:#3E2723;flex:1">➕ Adicionar à Lista</button>
+                    </div>
                 </div>
+                
                 <div id="listaEventosDia" style="margin-top:20px"></div>
             </div>
         </main>
+        
+        <div id="barraSalvar">
+            <span id="txtPendentes">0 alterações pendentes</span>
+            <button onclick="processarFila()" class="btn-mini" style="background:#4CAF50; color:white; font-size:1rem; padding:8px 15px">💾 SALVAR TUDO</button>
+        </div>
     </div>
 
     <script>
         let todosServos = [];
         let eventosMes = [];
+        let filaPendentes = []; // LISTA TEMPORÁRIA
         let dataCalendario = new Date();
 
-        function mudarAba(idAlvo, abaElemento) {
+        // --- SISTEMA DE ABAS ---
+        function mudarAba(id, el) {
             document.querySelectorAll('.view-section').forEach(v => v.classList.remove('ativa'));
-            document.getElementById(idAlvo).classList.add('ativa');
+            document.getElementById(id).classList.add('ativa');
             document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa'));
-            abaElemento.classList.add('ativa');
-            if(idAlvo === 'tab-calendario') carregarEventosDoMes();
+            el.classList.add('ativa');
+            if(id==='tab-calendario') carregarEventosDoMes();
         }
+        function toggleArea(id) { const el=document.getElementById(id); el.style.display=el.style.display==='block'?'none':'block'; }
 
-        function toggleArea(id) { const el = document.getElementById(id); el.style.display = el.style.display==='block'?'none':'block'; }
-
+        // --- CALENDÁRIO ---
         async function carregarEventosDoMes() {
             try {
                 const res = await fetch('/eventos');
                 eventosMes = await res.json();
                 renderizarCalendario();
-            } catch(e) { }
+            } catch(e) {}
         }
 
         function renderizarCalendario() {
@@ -247,162 +251,164 @@
             const meses = ["JANEIRO","FEVEREIRO","MARÇO","ABRIL","MAIO","JUNHO","JULHO","AGOSTO","SETEMBRO","OUTUBRO","NOVEMBRO","DEZEMBRO"];
             document.getElementById('mesAnoDisplay').innerText = `${meses[mes]} ${ano}`;
 
-            const primeiroDiaSemana = new Date(ano, mes, 1).getDay();
-            const ultimoDiaMes = new Date(ano, mes + 1, 0).getDate();
+            const primeiroDia = new Date(ano, mes, 1).getDay();
+            const ultimoDia = new Date(ano, mes + 1, 0).getDate();
 
-            // Células vazias antes do dia 1
-            for(let i=0; i<primeiroDiaSemana; i++) grid.innerHTML += `<div style="background:#EEE"></div>`;
+            for(let i=0; i<primeiroDia; i++) grid.innerHTML += `<div style="background:#EEE"></div>`;
 
-            const hojeStr = new Date().toISOString().split('T')[0];
+            const hoje = new Date().toISOString().split('T')[0];
             
-            for(let dia=1; dia<=ultimoDiaMes; dia++) {
+            for(let dia=1; dia<=ultimoDia; dia++) {
                 const dataFmt = `${ano}-${String(mes+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
-                const evsDia = eventosMes.filter(e => e.data === dataFmt);
                 
-                let htmlEvs = "";
-                evsDia.forEach(ev => { 
-                    htmlEvs += `<div class="evento-chip">${ev.titulo}</div>`; 
-                });
+                // Pega eventos salvos + eventos pendentes da fila
+                const salvos = eventosMes.filter(e => e.data === dataFmt);
+                const pendentes = filaPendentes.filter(e => e.data === dataFmt);
+                
+                let html = "";
+                salvos.forEach(ev => html += `<div class="evento-chip">${ev.titulo}</div>`);
+                pendentes.forEach(ev => html += `<div class="evento-chip pendente">⏳ ${ev.titulo}</div>`);
 
-                const ehHoje = dataFmt === hojeStr ? 'hoje' : '';
+                const cls = dataFmt === hoje ? 'dia-cal hoje' : 'dia-cal';
                 const div = document.createElement('div');
-                div.className = `dia-cal ${ehHoje}`;
-                div.innerHTML = `<span class="dia-numero">${dia}</span>${htmlEvs}`;
+                div.className = cls;
+                div.innerHTML = `<span class="dia-numero">${dia}</span>${html}`;
                 div.onclick = () => abrirModalEvento(dataFmt);
                 grid.appendChild(div);
             }
         }
 
-        function mudarMes(delta) {
-            dataCalendario.setMonth(dataCalendario.getMonth() + delta);
-            carregarEventosDoMes();
-        }
+        function mudarMes(d) { dataCalendario.setMonth(dataCalendario.getMonth()+d); carregarEventosDoMes(); }
 
-        // --- FUNÇÃO DE GERAR PDF (NOVA) ---
+        // --- GERAR PDF (CORRIGIDO) ---
         function gerarPDFCalendario() {
-            const elemento = document.getElementById('areaCalendarioPDF');
+            const el = document.getElementById('areaCalendarioPDF');
             
-            // Esconde botões na hora do PDF
-            document.querySelectorAll('.esconder-na-foto').forEach(b => b.style.display = 'none');
+            // Prepara para impressão: mostra logo, esconde botões
+            document.getElementById('logoPdfHeader').style.display = 'block';
+            document.querySelectorAll('.esconder-na-foto').forEach(b => b.style.display='none');
             
-            // Configurações do PDF (A4, Paisagem)
             const opt = {
-                margin:       5,
-                filename:     `Calendario_${document.getElementById('mesAnoDisplay').innerText}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2 }, // Melhora a qualidade
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+                margin: 5,
+                filename: `Calendario_${document.getElementById('mesAnoDisplay').innerText}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
             };
 
-            // Gera e Baixa
-            html2pdf().set(opt).from(elemento).save().then(() => {
-                // Mostra botões de volta
-                document.querySelectorAll('.esconder-na-foto').forEach(b => b.style.display = 'inline-block');
+            html2pdf().set(opt).from(el).save().then(() => {
+                // Restaura visual
+                document.getElementById('logoPdfHeader').style.display = 'none';
+                document.querySelectorAll('.esconder-na-foto').forEach(b => b.style.display='inline-block');
             });
         }
 
-        function abrirModalEvento(dataStr) {
-            document.getElementById('modalEvento').style.display = 'block';
-            document.getElementById('evDataInicio').value = dataStr;
-            document.getElementById('evDataFim').value = ""; 
+        // --- FILA DE EVENTOS (LOTE) ---
+        function abrirModalEvento(d) {
+            document.getElementById('modalEvento').style.display='block';
+            document.getElementById('evDataInicio').value = d;
+            document.getElementById('evDataFim').value = "";
             document.getElementById('evTitulo').value = "";
             
-            const divLista = document.getElementById('listaEventosDia');
-            divLista.innerHTML = "<h4>Agenda do dia:</h4>";
-            const evs = eventosMes.filter(e => e.data === dataStr);
-            if(evs.length === 0) divLista.innerHTML += "<p><small>Nada marcado.</small></p>";
-            evs.forEach(ev => {
-                divLista.innerHTML += `
-                <div style="background:#FFF; padding:8px; margin-bottom:5px; border-radius:5px; border-left:4px solid var(--cor-primaria); display:flex; justify-content:space-between; align-items:center">
-                    <div><b>${ev.titulo}</b><br><small>${ev.ministerio}</small></div>
-                    <button onclick="apagarEvento(${ev.id})" style="color:red;border:none;background:none;cursor:pointer;font-size:1.2rem">🗑️</button>
-                </div>`;
-            });
+            const div = document.getElementById('listaEventosDia');
+            div.innerHTML = "<h4>Neste dia:</h4>";
+            
+            // Mostra salvos
+            const salvos = eventosMes.filter(e => e.data === d);
+            salvos.forEach(ev => div.innerHTML += `<div style="padding:5px;border-bottom:1px solid #ddd;display:flex;justify-content:space-between"><span>${ev.titulo}</span><button onclick="apagarEvento(${ev.id})" style="color:red;border:none;cursor:pointer">🗑️</button></div>`);
+            
+            // Mostra pendentes
+            const pends = filaPendentes.filter(e => e.data === d);
+            pends.forEach((ev, idx) => div.innerHTML += `<div style="padding:5px;background:#FFF9C4;display:flex;justify-content:space-between"><span>⏳ ${ev.titulo}</span><small>Pendente</small></div>`);
         }
-        function fecharModalEvento() { document.getElementById('modalEvento').style.display = 'none'; }
+        function fecharModalEvento() { document.getElementById('modalEvento').style.display='none'; }
 
-        async function salvarEvento() {
-            const tituloOriginal = document.getElementById('evTitulo').value;
-            const dataInicio = document.getElementById('evDataInicio').value;
-            const dataFim = document.getElementById('evDataFim').value;
-            const ministerio = document.getElementById('evMinisterio').value;
+        function adicionarAFila() {
+            const tit = document.getElementById('evTitulo').value;
+            const ini = document.getElementById('evDataInicio').value;
+            const fim = document.getElementById('evDataFim').value;
+            const min = document.getElementById('evMinisterio').value;
             
-            if(!tituloOriginal) return alert("Digite um título!");
-            const senha = prompt("🔒 Senha de Coordenador:");
-            if(!senha) return;
+            if(!tit) return alert("Digite o título!");
 
-            let tituloFinal = tituloOriginal;
-            if(ministerio !== 'Geral') tituloFinal = `${tituloOriginal} - ${ministerio}`;
+            let tituloFinal = tit;
+            if(min !== 'Geral') tituloFinal = `${tit} - ${min}`;
 
-            let dataAtual = new Date(dataInicio);
-            dataAtual.setMinutes(dataAtual.getMinutes() + dataAtual.getTimezoneOffset());
-            
-            let dataLimite = dataFim ? new Date(dataFim) : new Date(dataInicio);
-            dataLimite.setMinutes(dataLimite.getMinutes() + dataLimite.getTimezoneOffset());
+            // Calcula dias
+            let atual = new Date(ini); atual.setMinutes(atual.getMinutes()+atual.getTimezoneOffset());
+            let limite = fim ? new Date(fim) : new Date(ini); limite.setMinutes(limite.getMinutes()+limite.getTimezoneOffset());
 
-            if(dataLimite < dataAtual) return alert("Data Final menor que Início!");
+            if(limite < atual) return alert("Data final menor que início");
 
-            let salvou = false;
-            while(dataAtual <= dataLimite) {
-                const diaString = dataAtual.toISOString().split('T')[0];
-                await fetch('/eventos', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ titulo: tituloFinal, data: diaString, ministerio, senha }) });
-                dataAtual.setDate(dataAtual.getDate() + 1);
-                salvou = true;
+            let count = 0;
+            while(atual <= limite) {
+                filaPendentes.push({
+                    titulo: tituloFinal,
+                    data: atual.toISOString().split('T')[0],
+                    ministerio: min
+                });
+                atual.setDate(atual.getDate()+1);
+                count++;
             }
 
-            if(salvou) { alert("Salvo!"); carregarEventosDoMes(); abrirModalEvento(dataInicio); }
+            fecharModalEvento();
+            renderizarCalendario();
+            atualizarBarraSalvar();
+        }
+
+        function atualizarBarraSalvar() {
+            const barra = document.getElementById('barraSalvar');
+            const txt = document.getElementById('txtPendentes');
+            if(filaPendentes.length > 0) {
+                barra.style.display = 'flex';
+                txt.innerText = `${filaPendentes.length} alterações pendentes`;
+            } else {
+                barra.style.display = 'none';
+            }
+        }
+
+        async function processarFila() {
+            if(filaPendentes.length === 0) return;
+            const senha = prompt(`Salvar ${filaPendentes.length} eventos?\n🔒 Digite a Senha:`);
+            if(!senha) return;
+
+            // Envia um por um (simples e seguro)
+            let erros = 0;
+            for(const ev of filaPendentes) {
+                const res = await fetch('/eventos', {
+                    method: 'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({ ...ev, senha })
+                });
+                if(!res.ok) erros++;
+            }
+
+            if(erros > 0) alert(`Atenção: ${erros} eventos falharam (senha incorreta?).`);
+            else alert("✅ Tudo Salvo!");
+
+            filaPendentes = []; // Limpa fila
+            atualizarBarraSalvar();
+            carregarEventosDoMes();
         }
 
         async function apagarEvento(id) {
             if(!confirm("Apagar?")) return;
             const senha = prompt("🔒 Senha:"); if(!senha) return;
-            const res = await fetch(`/eventos/${id}`, { method: 'DELETE', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ senha }) });
-            if(res.ok) { const d = document.getElementById('evDataInicio').value; carregarEventosDoMes(); setTimeout(()=>abrirModalEvento(d),500); } else { alert("Erro"); }
+            const r = await fetch(`/eventos/${id}`, {method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({senha})});
+            if(r.ok) { const d=document.getElementById('evDataInicio').value; carregarEventosDoMes(); setTimeout(()=>abrirModalEvento(d),500); }
+            else alert("Erro");
         }
 
-        // --- CÓDIGOS PADRÃO (MANTIDOS) ---
-        async function carregarDadosIniciais() { try { const r=await fetch('/servos'); todosServos=await r.json(); }catch(e){} }
-        async function salvarNovoServo() {
-            const nome = document.getElementById('novoNome').value; const min = document.getElementById('novoMinisterio').value;
-            if(!nome) return;
-            await fetch('/servos', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({nome, ministerio:min}) });
-            alert("Salvo!"); toggleArea('areaCadastro'); carregarDadosIniciais();
-        }
-        function filtrarListaPorMinisterio() {
-            const min = document.getElementById('selectMinisterio').value; const cont = document.getElementById('containerChecklist'); cont.innerHTML = "";
-            if(!min) return;
-            const lista = todosServos.filter(s => min==="Geral" ? true : s.ministerio && s.ministerio.includes(min));
-            if(lista.length===0) cont.innerHTML="<p style='text-align:center'>Vazio</p>";
-            lista.forEach(s => { cont.innerHTML += `<div class="checklist-item"><label style="display:flex;width:100%;align-items:center"><input type="checkbox" value="${s.id}" class="chk-servo"><span style="flex:1">${s.nome}</span><small>(${s.ministerio})</small></label></div>`; });
-        }
-        function marcarTodos(b) { document.querySelectorAll('.chk-servo').forEach(c=>c.checked=b); }
-        document.getElementById('formEscala').onsubmit = async (e) => {
-            e.preventDefault(); const ids = Array.from(document.querySelectorAll('.chk-servo:checked')).map(c=>c.value);
-            if(ids.length===0) return alert("Selecione alguém!");
-            const senha = prompt("🔒 Senha:"); if(!senha) return;
-            const res = await fetch('/escalar-multiplo', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({servo_ids:ids, data:document.getElementById('dataEscala').value, ministerio_nome:document.getElementById('selectMinisterio').value, responsavel:document.getElementById('inputResponsavel').value, senha}) });
-            const j = await res.json(); alert(res.ok?j.mensagem:j.erro);
-            if(res.ok) { carregarEscalaDoDia(); marcarTodos(false); }
-        };
-        async function carregarEscalaDoDia() {
-            const data = document.getElementById('dataEscala').value; if(!data) return;
-            document.getElementById('dataTitulo').innerText = data.split('-').reverse().join('/');
-            const div = document.getElementById('listaEscalados'); div.innerHTML = "Carregando...";
-            const res = await fetch(`/escalas/${data}`); const lista = await res.json(); div.innerHTML = "";
-            lista.forEach(i => { div.innerHTML += `<div class="card-escala"><div><b>${i.servos?.nome}</b><br><small>${i.ministerio_nome}</small></div><button class="btn-acao" onclick="delEscala(${i.id})">❌</button></div>`; });
-        }
-        async function delEscala(id) {
-            const senha = prompt("Senha:"); if(!senha) return;
-            const r = await fetch(`/escalas/${id}`, {method:'DELETE', headers:{'Content-Type':'application/json'}, body:JSON.stringify({senha})});
-            if(r.ok) carregarEscalaDoDia(); else alert("Erro");
-        }
-        function gerarImagem() {
-            const area = document.getElementById('areaParaImagem');
-            document.querySelectorAll('.btn-acao').forEach(b => b.style.display='none');
-            html2canvas(area).then(c => { const a = document.createElement('a'); a.download='escala.jpg'; a.href=c.toDataURL(); a.click(); document.querySelectorAll('.btn-acao').forEach(b => b.style.display='block'); });
-        }
-        function carregarParaGerenciar() { const div = document.getElementById('listaGerencia'); div.innerHTML=""; todosServos.forEach(s => div.innerHTML+=`<div style="display:flex;justify-content:space-between;padding:5px;border-bottom:1px solid #eee"><span>${s.nome}</span><button onclick="editarServo(${s.id},'${s.nome}','${s.ministerio}')">✏️</button></div>`); }
-        async function editarServo(id,n,m) { const nn = prompt("Nome:",n); const nm=prompt("Ministério:",m); const s=prompt("Senha:"); if(nn&&nm&&s) await fetch(`/servos/${id}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({nome:nn,ministerio:nm,senha:s})}); carregarDadosIniciais(); }
+        // --- ESCALAS E GERAIS ---
+        async function carregarDadosIniciais(){try{const r=await fetch('/servos');todosServos=await r.json();}catch(e){}}
+        async function salvarNovoServo(){const n=document.getElementById('novoNome').value;const m=document.getElementById('novoMinisterio').value;if(!n)return;await fetch('/servos',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:n,ministerio:m})});alert("Salvo!");toggleArea('areaCadastro');carregarDadosIniciais();}
+        function filtrarListaPorMinisterio(){const m=document.getElementById('selectMinisterio').value;const c=document.getElementById('containerChecklist');c.innerHTML="";if(!m)return;const l=todosServos.filter(s=>m==="Geral"?true:s.ministerio&&s.ministerio.includes(m));if(l.length===0)c.innerHTML="<p style='text-align:center'>Vazio</p>";l.forEach(s=>{c.innerHTML+=`<div class="checklist-item"><label style='display:flex;width:100%'><input type='checkbox' value='${s.id}' class='chk-servo'><span style='flex:1'>${s.nome}</span><small>(${s.ministerio})</small></label></div>`})}
+        function marcarTodos(b){document.querySelectorAll('.chk-servo').forEach(c=>c.checked=b)}
+        document.getElementById('formEscala').onsubmit=async(e)=>{e.preventDefault();const i=Array.from(document.querySelectorAll('.chk-servo:checked')).map(c=>c.value);if(i.length===0)return alert("Selecione alguém!");const s=prompt("🔒 Senha:");if(!s)return;const r=await fetch('/escalar-multiplo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({servo_ids:i,data:document.getElementById('dataEscala').value,ministerio_nome:document.getElementById('selectMinisterio').value,responsavel:document.getElementById('inputResponsavel').value,senha:s})});const j=await r.json();alert(r.ok?j.mensagem:j.erro);if(r.ok){carregarEscalaDoDia();marcarTodos(false);}}
+        async function carregarEscalaDoDia(){const d=document.getElementById('dataEscala').value;if(!d)return;document.getElementById('dataTitulo').innerText=d.split('-').reverse().join('/');const div=document.getElementById('listaEscalados');div.innerHTML="Carregando...";const r=await fetch(`/escalas/${d}`);const l=await r.json();div.innerHTML="";l.forEach(i=>{div.innerHTML+=`<div class='card-escala'><div><b>${i.servos?.nome}</b><br><small>${i.ministerio_nome}</small></div><button class='btn-acao' onclick='delEscala(${i.id})'>❌</button></div>`})}
+        async function delEscala(id){const s=prompt("Senha:");if(!s)return;const r=await fetch(`/escalas/${id}`,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({senha:s})});if(r.ok)carregarEscalaDoDia();else alert("Erro");}
+        function gerarImagem(){const a=document.getElementById('areaParaImagem');document.querySelectorAll('.btn-acao').forEach(b=>b.style.display='none');html2canvas(a).then(c=>{const l=document.createElement('a');l.download='escala.jpg';l.href=c.toDataURL();l.click();document.querySelectorAll('.btn-acao').forEach(b=>b.style.display='block');})}
+        function carregarParaGerenciar(){const d=document.getElementById('listaGerencia');d.innerHTML="";todosServos.forEach(s=>d.innerHTML+=`<div style='display:flex;justify-content:space-between;padding:5px;border-bottom:1px solid #eee'><span>${s.nome}</span><button onclick="editarServo(${s.id},'${s.nome}','${s.ministerio}')">✏️</button></div>`)}
+        async function editarServo(id,n,m){const nn=prompt("Nome:",n);const nm=prompt("Min:",m);const s=prompt("Senha:");if(nn&&nm&&s)await fetch(`/servos/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:nn,ministerio:nm,senha:s})});carregarDadosIniciais();}
 
         window.onload = () => { carregarDadosIniciais(); };
     </script>

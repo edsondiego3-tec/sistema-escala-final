@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jacozinho do Senhor</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
         :root {
@@ -15,7 +17,7 @@
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Roboto', sans-serif; background-color: var(--cor-fundo); color: var(--cor-texto); display: flex; justify-content: center; min-height: 100vh; padding-bottom: 50px;}
-        .app-container { background: var(--cor-branco); width: 100%; max-width: 500px; box-shadow: 0 4px 20px rgba(93,64,55,0.15); min-height: 100vh; display: flex; flex-direction: column; }
+        .app-container { background: var(--cor-branco); width: 100%; max-width: 800px; /* Aumentei um pouco para caber melhor na tela */ box-shadow: 0 4px 20px rgba(93,64,55,0.15); min-height: 100vh; display: flex; flex-direction: column; }
         
         header { background: white; padding: 15px; text-align: center; border-bottom: 4px solid var(--cor-primaria); }
         .logo-img { max-width: 150px; display: block; margin: 0 auto 5px auto; }
@@ -36,43 +38,50 @@
         .btn-salvar { width: 100%; padding: 15px; background-color: var(--cor-primaria); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 20px; font-size: 1rem; }
         .btn-mini { padding: 6px 12px; font-size: 0.8rem; background: #D7CCC8; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
         
-        /* --- CALENDÁRIO (FIXO) --- */
-        .calendario-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; background: var(--cor-primaria); color: white; padding: 10px; border-radius: 8px 8px 0 0; }
+        /* --- CALENDÁRIO --- */
+        /* Estilo específico para o PDF ficar bonito */
+        #areaCalendarioPDF {
+            background: white;
+            padding: 10px;
+            color: #000; /* Garante preto puro para impressão */
+        }
+
+        .calendario-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; background: var(--cor-primaria); color: white; padding: 15px; border-radius: 8px 8px 0 0; }
         
         .grid-dias { 
             display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; 
-            text-align: center; font-weight: bold; margin-bottom: 5px; 
-            color: var(--cor-secundaria); font-size: 0.8rem; background: #EEE; padding: 5px 0;
+            text-align: center; font-weight: bold; margin-bottom: 0; 
+            color: var(--cor-branco); background: var(--cor-secundaria); padding: 8px 0; font-size: 0.9rem;
         }
         
         .grid-calendario { 
             display: grid; 
-            grid-template-columns: repeat(7, 1fr); /* Garante 7 colunas fixas */
-            grid-auto-rows: 110px; /* --- CORREÇÃO: Altura fixa para todos os dias --- */
+            grid-template-columns: repeat(7, 1fr); 
+            grid-auto-rows: 120px; /* Altura fixa boa para A4 */
             gap: 2px; 
             background: #D7CCC8; 
-            border: 1px solid #D7CCC8; 
+            border: 2px solid var(--cor-secundaria); 
         }
         
         .dia-cal { 
-            background: #FAFAFA; 
-            padding: 2px; 
+            background: #FFF; 
+            padding: 4px; 
             cursor: pointer; 
             position: relative; 
             font-size: 0.85rem; 
             display: flex; 
             flex-direction: column;
-            overflow: hidden; /* Esconde o que passar do tamanho */
+            overflow: hidden; 
         }
-        .dia-cal:hover { background: #FFF; overflow-y: auto; /* Mostra barra de rolagem se passar o mouse */ }
+        .dia-cal:hover { background: #FAFAFA; overflow-y: auto; }
         .dia-cal.hoje { background: #E0F2F1; }
-        .dia-numero { font-weight: bold; display: block; margin-bottom: 2px; padding-left: 4px; color: #5D4037;}
+        .dia-numero { font-weight: bold; display: block; margin-bottom: 4px; color: var(--cor-primaria); font-size: 1rem;}
         
         .evento-chip { 
-            font-size: 0.6rem; background: var(--cor-secundaria); color: white; 
-            padding: 3px; border-radius: 3px; margin-bottom: 2px; 
+            font-size: 0.7rem; background: var(--cor-primaria); color: white; 
+            padding: 3px 5px; border-radius: 4px; margin-bottom: 2px; 
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
-            width: 100%;
+            width: 100%; display: block;
         }
 
         /* MODAIS */
@@ -143,38 +152,32 @@
                     <h3 style="text-align:center;color:#5D4037;border-bottom:2px solid #5D4037;margin-bottom:10px">ESCALA DO DIA <span id="dataTitulo">--/--</span></h3>
                     <div id="listaEscalados"></div>
                 </div>
-                <button onclick="gerarImagem()" class="btn-salvar" style="background:var(--cor-sucesso);margin-top:10px">📸 Baixar Escala</button>
+                <button onclick="gerarImagem()" class="btn-salvar" style="background:var(--cor-sucesso);margin-top:10px">📸 Baixar Escala (JPG)</button>
             </div>
 
             <div id="tab-calendario" class="view-section">
                 
-                <div id="areaCalendarioImagem" style="background:white; padding:5px; border-radius:8px;">
+                <div id="areaCalendarioPDF">
                     <div class="calendario-header">
                         <button class="btn-mini esconder-na-foto" onclick="mudarMes(-1)">◀</button>
-                        <h3 id="mesAnoDisplay" style="margin:0; text-transform:uppercase; letter-spacing:1px;">Mês / Ano</h3>
+                        <h2 id="mesAnoDisplay" style="margin:0; text-transform:uppercase; letter-spacing:2px; font-size:1.5rem">Mês / Ano</h2>
                         <button class="btn-mini esconder-na-foto" onclick="mudarMes(1)">▶</button>
                     </div>
 
                     <div class="grid-dias">
-                        <div>DOM</div><div>SEG</div><div>TER</div><div>QUA</div><div>QUI</div><div>SEX</div><div>SÁB</div>
+                        <div>DOMINGO</div><div>SEGUNDA</div><div>TERÇA</div><div>QUARTA</div><div>QUINTA</div><div>SEXTA</div><div>SÁBADO</div>
                     </div>
                     <div id="calendarioGrid" class="grid-calendario"></div>
                 </div>
                 
-                <button onclick="gerarImagemCalendario()" class="btn-salvar" style="background:var(--cor-sucesso); margin-top:10px">📸 Baixar Calendário</button>
+                <button onclick="gerarPDFCalendario()" class="btn-salvar" style="background:#D32F2F; margin-top:10px">📄 Baixar Calendário (PDF A4)</button>
 
                 <div id="modalEvento" class="area-modal" style="margin-top:20px">
                     <h3>Novo Compromisso</h3>
                     
                     <div style="display:flex; gap:10px;">
-                        <div style="flex:1">
-                            <label>Início:</label>
-                            <input type="date" id="evDataInicio" readonly style="background:#EEE">
-                        </div>
-                        <div style="flex:1">
-                            <label>Final (Opcional):</label>
-                            <input type="date" id="evDataFim">
-                        </div>
+                        <div style="flex:1"><label>Início:</label><input type="date" id="evDataInicio" readonly style="background:#EEE"></div>
+                        <div style="flex:1"><label>Final (Opcional):</label><input type="date" id="evDataFim"></div>
                     </div>
                     <small style="color:#666; display:block; margin-bottom:10px">Se preencher a data final, o evento repetirá todos os dias.</small>
 
@@ -247,6 +250,7 @@
             const primeiroDiaSemana = new Date(ano, mes, 1).getDay();
             const ultimoDiaMes = new Date(ano, mes + 1, 0).getDate();
 
+            // Células vazias antes do dia 1
             for(let i=0; i<primeiroDiaSemana; i++) grid.innerHTML += `<div style="background:#EEE"></div>`;
 
             const hojeStr = new Date().toISOString().split('T')[0];
@@ -274,28 +278,33 @@
             carregarEventosDoMes();
         }
 
-        function gerarImagemCalendario() {
-            const area = document.getElementById('areaCalendarioImagem');
-            document.querySelectorAll('.esconder-na-foto').forEach(btn => btn.style.display = 'none');
-            // Remove scrollbars temporariamente para a foto sair inteira
-            const dias = document.querySelectorAll('.dia-cal');
-            dias.forEach(d => d.style.overflow = 'visible');
+        // --- FUNÇÃO DE GERAR PDF (NOVA) ---
+        function gerarPDFCalendario() {
+            const elemento = document.getElementById('areaCalendarioPDF');
             
-            html2canvas(area).then(canvas => {
-                const link = document.createElement('a');
-                link.download = `Calendario_Jacozinho_${document.getElementById('mesAnoDisplay').innerText}.jpg`;
-                link.href = canvas.toDataURL("image/jpeg");
-                link.click();
-                
-                document.querySelectorAll('.esconder-na-foto').forEach(btn => btn.style.display = 'inline-block');
-                dias.forEach(d => d.style.overflow = 'hidden');
+            // Esconde botões na hora do PDF
+            document.querySelectorAll('.esconder-na-foto').forEach(b => b.style.display = 'none');
+            
+            // Configurações do PDF (A4, Paisagem)
+            const opt = {
+                margin:       5,
+                filename:     `Calendario_${document.getElementById('mesAnoDisplay').innerText}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 }, // Melhora a qualidade
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            };
+
+            // Gera e Baixa
+            html2pdf().set(opt).from(elemento).save().then(() => {
+                // Mostra botões de volta
+                document.querySelectorAll('.esconder-na-foto').forEach(b => b.style.display = 'inline-block');
             });
         }
 
         function abrirModalEvento(dataStr) {
             document.getElementById('modalEvento').style.display = 'block';
             document.getElementById('evDataInicio').value = dataStr;
-            document.getElementById('evDataFim').value = ""; // Limpa data fim
+            document.getElementById('evDataFim').value = ""; 
             document.getElementById('evTitulo').value = "";
             
             const divLista = document.getElementById('listaEventosDia');
@@ -319,17 +328,13 @@
             const ministerio = document.getElementById('evMinisterio').value;
             
             if(!tituloOriginal) return alert("Digite um título!");
-            
             const senha = prompt("🔒 Senha de Coordenador:");
             if(!senha) return;
 
-            // Formatação do Título
             let tituloFinal = tituloOriginal;
             if(ministerio !== 'Geral') tituloFinal = `${tituloOriginal} - ${ministerio}`;
 
-            // LÓGICA DE MÚLTIPLOS DIAS
             let dataAtual = new Date(dataInicio);
-            // Ajusta fuso horário para não pular dia
             dataAtual.setMinutes(dataAtual.getMinutes() + dataAtual.getTimezoneOffset());
             
             let dataLimite = dataFim ? new Date(dataFim) : new Date(dataInicio);
@@ -337,27 +342,15 @@
 
             if(dataLimite < dataAtual) return alert("Data Final menor que Início!");
 
-            // Loop para salvar dia por dia
             let salvou = false;
             while(dataAtual <= dataLimite) {
                 const diaString = dataAtual.toISOString().split('T')[0];
-                
-                await fetch('/eventos', { 
-                    method: 'POST', 
-                    headers: {'Content-Type':'application/json'}, 
-                    body: JSON.stringify({ titulo: tituloFinal, data: diaString, ministerio, senha }) 
-                });
-                
-                // Avança um dia
+                await fetch('/eventos', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ titulo: tituloFinal, data: diaString, ministerio, senha }) });
                 dataAtual.setDate(dataAtual.getDate() + 1);
                 salvou = true;
             }
 
-            if(salvou) { 
-                alert("Salvo!"); 
-                carregarEventosDoMes(); 
-                abrirModalEvento(dataInicio); 
-            }
+            if(salvou) { alert("Salvo!"); carregarEventosDoMes(); abrirModalEvento(dataInicio); }
         }
 
         async function apagarEvento(id) {

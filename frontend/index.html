@@ -20,39 +20,38 @@
         header { background: white; padding: 15px; text-align: center; border-bottom: 4px solid var(--cor-primaria); }
         .logo-img { max-width: 150px; display: block; margin: 0 auto 5px auto; }
         
-        /* ABAS DE NAVEGAÇÃO */
+        /* ABAS */
         .abas { display: flex; background: #D7CCC8; }
         .aba { flex: 1; padding: 15px; text-align: center; cursor: pointer; font-weight: bold; color: #5D4037; border-bottom: 3px solid transparent; }
         .aba.ativa { background: white; border-bottom: 3px solid var(--cor-primaria); color: var(--cor-primaria); }
         
         main { padding: 20px; flex-grow: 1; }
-        .view-section { display: none; } /* Esconde as seções */
+        .view-section { display: none; }
         .view-section.ativa { display: block; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
 
-        /* ESTILOS PADRÃO (Inputs, Botões) */
+        /* INPUTS E BOTÕES */
         label { font-size: 0.8rem; color: var(--cor-secundaria); font-weight: 700; margin-bottom: 5px; display: block; text-transform: uppercase; margin-top: 15px;}
         input, select { width: 100%; padding: 12px; border: 2px solid #D7CCC8; border-radius: 8px; font-size: 1rem; margin-bottom: 5px; background: #fff;}
         .btn-salvar { width: 100%; padding: 15px; background-color: var(--cor-primaria); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 20px; font-size: 1rem; }
         .btn-mini { padding: 6px 12px; font-size: 0.8rem; background: #D7CCC8; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
         
         /* CALENDÁRIO */
-        .calendario-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: var(--cor-primaria); color: white; padding: 10px; border-radius: 8px; }
-        .grid-dias { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; font-weight: bold; margin-bottom: 5px; color: var(--cor-secundaria); font-size: 0.8rem; }
-        .grid-calendario { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+        .calendario-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; background: var(--cor-primaria); color: white; padding: 10px; border-radius: 8px 8px 0 0; }
+        .grid-dias { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; font-weight: bold; margin-bottom: 5px; color: var(--cor-secundaria); font-size: 0.8rem; background: #EEE; padding: 5px 0;}
+        .grid-calendario { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; background: #D7CCC8; border: 1px solid #D7CCC8; }
         
         .dia-cal { 
-            background: #FAFAFA; border: 1px solid #EEE; min-height: 80px; padding: 5px; 
-            border-radius: 4px; cursor: pointer; position: relative; font-size: 0.9rem;
+            background: #FAFAFA; min-height: 80px; padding: 2px; 
+            cursor: pointer; position: relative; font-size: 0.85rem; display: flex; flex-direction: column;
         }
-        .dia-cal:hover { background: #EFEBE9; border-color: var(--cor-primaria); }
-        .dia-cal.hoje { background: #E0F2F1; border: 1px solid #009688; }
-        .dia-numero { font-weight: bold; display: block; margin-bottom: 5px; }
+        .dia-cal:hover { background: #FFF; }
+        .dia-cal.hoje { background: #E0F2F1; }
+        .dia-numero { font-weight: bold; display: block; margin-bottom: 2px; padding-left: 4px; color: #5D4037;}
         
-        /* Bolinha de evento no calendário */
         .evento-chip { 
-            font-size: 0.65rem; background: var(--cor-secundaria); color: white; 
-            padding: 2px 4px; border-radius: 3px; margin-bottom: 2px; 
+            font-size: 0.6rem; background: var(--cor-secundaria); color: white; 
+            padding: 2px; border-radius: 2px; margin-bottom: 1px; 
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
         }
 
@@ -64,6 +63,9 @@
         
         .card-escala { background: #F5F5F5; border-radius: 8px; padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; border-left: 5px solid var(--cor-primaria); }
         .btn-acao { border: none; background: none; font-size: 1.2rem; cursor: pointer; }
+
+        /* Classe para esconder botões na hora da foto */
+        .esconder-na-foto { display: inline-block; }
     </style>
 </head>
 <body>
@@ -125,46 +127,34 @@
                     <h3 style="text-align:center;color:#5D4037;border-bottom:2px solid #5D4037;margin-bottom:10px">ESCALA DO DIA <span id="dataTitulo">--/--</span></h3>
                     <div id="listaEscalados"></div>
                 </div>
-                <button onclick="gerarImagem()" class="btn-salvar" style="background:var(--cor-sucesso);margin-top:10px">📸 Baixar Imagem</button>
+                <button onclick="gerarImagem()" class="btn-salvar" style="background:var(--cor-sucesso);margin-top:10px">📸 Baixar Escala</button>
             </div>
 
             <div id="tab-calendario" class="view-section">
                 
-                <div class="calendario-header">
-                    <button class="btn-mini" onclick="mudarMes(-1)">◀ Ant</button>
-                    <h3 id="mesAnoDisplay">Mês / Ano</h3>
-                    <button class="btn-mini" onclick="mudarMes(1)">Prox ▶</button>
-                </div>
+                <div id="areaCalendarioImagem" style="background:white; padding:5px; border-radius:8px;">
+                    <div class="calendario-header">
+                        <button class="btn-mini esconder-na-foto" onclick="mudarMes(-1)">◀</button>
+                        <h3 id="mesAnoDisplay" style="margin:0; text-transform:uppercase; letter-spacing:1px;">Mês / Ano</h3>
+                        <button class="btn-mini esconder-na-foto" onclick="mudarMes(1)">▶</button>
+                    </div>
 
-                <div class="grid-dias">
-                    <div>DOM</div><div>SEG</div><div>TER</div><div>QUA</div><div>QUI</div><div>SEX</div><div>SÁB</div>
+                    <div class="grid-dias">
+                        <div>DOM</div><div>SEG</div><div>TER</div><div>QUA</div><div>QUI</div><div>SEX</div><div>SÁB</div>
+                    </div>
+                    <div id="calendarioGrid" class="grid-calendario"></div>
                 </div>
-                <div id="calendarioGrid" class="grid-calendario"></div>
+                
+                <button onclick="gerarImagemCalendario()" class="btn-salvar" style="background:var(--cor-sucesso); margin-top:10px">📸 Baixar Calendário</button>
 
                 <div id="modalEvento" class="area-modal" style="margin-top:20px">
                     <h3>Novo Compromisso</h3>
-                    <label>Data:</label>
-                    <input type="date" id="evData" readonly style="background:#EEE">
-                    
-                    <label>Título (Ex: Missa, Reunião):</label>
-                    <input type="text" id="evTitulo" placeholder="O que vai acontecer?">
-                    
-                    <label>Ministério Responsável:</label>
-                    <select id="evMinisterio">
-                        <option value="Geral">Geral (Todo Grupo)</option>
-                        <option value="Música">Música</option>
-                        <option value="Acolhida">Acolhida</option>
-                        <option value="Coordenação">Coordenação</option>
-                        <option value="Jovem">Jovem</option>
-                        <option value="Pregação">Pregação</option>
-                    </select>
-
-                    <div style="display:flex; gap:10px; margin-top:15px">
-                        <button onclick="fecharModalEvento()" class="btn-mini" style="background:#999;color:white;flex:1">Cancelar</button>
-                        <button onclick="salvarEvento()" class="btn-mini" style="background:var(--cor-primaria);color:white;flex:1">Salvar</button>
-                    </div>
+                    <label>Data:</label><input type="date" id="evData" readonly style="background:#EEE">
+                    <label>Título:</label><input type="text" id="evTitulo">
+                    <label>Ministério:</label>
+                    <select id="evMinisterio"><option value="Geral">Geral</option><option value="Música">Música</option><option value="Acolhida">Acolhida</option><option value="Coordenação">Coordenação</option><option value="Jovem">Jovem</option><option value="Pregação">Pregação</option></select>
+                    <div style="display:flex;gap:10px;margin-top:15px"><button onclick="fecharModalEvento()" class="btn-mini" style="background:#999;flex:1">Cancelar</button><button onclick="salvarEvento()" class="btn-mini" style="background:var(--cor-primaria);color:white;flex:1">Salvar</button></div>
                 </div>
-
                 <div id="listaEventosDia" style="margin-top:20px"></div>
             </div>
 
@@ -174,68 +164,55 @@
     <script>
         let todosServos = [];
         let eventosMes = [];
-        let dataCalendario = new Date(); // Controla o mês que estamos vendo
+        let dataCalendario = new Date();
 
-        // --- SISTEMA DE ABAS ---
         function mudarAba(idAlvo, abaElemento) {
             document.querySelectorAll('.view-section').forEach(v => v.classList.remove('ativa'));
             document.getElementById(idAlvo).classList.add('ativa');
-            
             document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa'));
             abaElemento.classList.add('ativa');
-
             if(idAlvo === 'tab-calendario') carregarEventosDoMes();
         }
 
         function toggleArea(id) { const el = document.getElementById(id); el.style.display = el.style.display==='block'?'none':'block'; }
 
-        // --- CALENDÁRIO LÓGICA ---
+        // --- CALENDÁRIO ---
         async function carregarEventosDoMes() {
             try {
                 const res = await fetch('/eventos');
                 eventosMes = await res.json();
                 renderizarCalendario();
-            } catch(e) { alert("Erro ao carregar agenda"); }
+            } catch(e) { }
         }
 
         function renderizarCalendario() {
             const grid = document.getElementById('calendarioGrid');
             grid.innerHTML = "";
-            
             const ano = dataCalendario.getFullYear();
             const mes = dataCalendario.getMonth();
-            
-            const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+            const meses = ["JANEIRO","FEVEREIRO","MARÇO","ABRIL","MAIO","JUNHO","JULHO","AGOSTO","SETEMBRO","OUTUBRO","NOVEMBRO","DEZEMBRO"];
             document.getElementById('mesAnoDisplay').innerText = `${meses[mes]} ${ano}`;
 
             const primeiroDiaSemana = new Date(ano, mes, 1).getDay();
             const ultimoDiaMes = new Date(ano, mes + 1, 0).getDate();
 
-            // Espaços vazios antes do dia 1
-            for(let i=0; i<primeiroDiaSemana; i++) {
-                grid.innerHTML += `<div></div>`;
-            }
+            for(let i=0; i<primeiroDiaSemana; i++) grid.innerHTML += `<div style="background:#EEE"></div>`;
 
-            // Dias do mês
             const hojeStr = new Date().toISOString().split('T')[0];
             
             for(let dia=1; dia<=ultimoDiaMes; dia++) {
                 const dataFmt = `${ano}-${String(mes+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
-                
-                // Acha eventos desse dia
                 const evsDia = eventosMes.filter(e => e.data === dataFmt);
                 let htmlEvs = "";
-                evsDia.forEach(ev => {
-                    htmlEvs += `<div class="evento-chip">${ev.titulo}</div>`;
-                });
+                // Mostra no máximo 3 pontinhos/nomes para não estourar o quadrado
+                evsDia.slice(0,4).forEach(ev => { htmlEvs += `<div class="evento-chip">${ev.titulo}</div>`; });
+                if(evsDia.length > 4) htmlEvs += `<div class="evento-chip" style="background:#999">+${evsDia.length-4}</div>`;
 
                 const ehHoje = dataFmt === hojeStr ? 'hoje' : '';
-
                 const div = document.createElement('div');
                 div.className = `dia-cal ${ehHoje}`;
                 div.innerHTML = `<span class="dia-numero">${dia}</span>${htmlEvs}`;
                 div.onclick = () => abrirModalEvento(dataFmt);
-                
                 grid.appendChild(div);
             }
         }
@@ -245,151 +222,105 @@
             carregarEventosDoMes();
         }
 
-        // --- NOVO EVENTO ---
+        // --- FOTO DO CALENDÁRIO (NOVO) ---
+        function gerarImagemCalendario() {
+            const area = document.getElementById('areaCalendarioImagem');
+            
+            // 1. Esconde as setas para a foto ficar bonita
+            document.querySelectorAll('.esconder-na-foto').forEach(btn => btn.style.display = 'none');
+
+            // 2. Tira a foto
+            html2canvas(area).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `Calendario_Jacozinho_${document.getElementById('mesAnoDisplay').innerText}.jpg`;
+                link.href = canvas.toDataURL("image/jpeg");
+                link.click();
+
+                // 3. Mostra as setas de volta
+                document.querySelectorAll('.esconder-na-foto').forEach(btn => btn.style.display = 'inline-block');
+            });
+        }
+
         function abrirModalEvento(dataStr) {
             document.getElementById('modalEvento').style.display = 'block';
             document.getElementById('evData').value = dataStr;
             document.getElementById('evTitulo').value = "";
-            
-            // Mostra detalhes dos eventos desse dia abaixo
             const divLista = document.getElementById('listaEventosDia');
-            divLista.innerHTML = "<h4>Eventos neste dia:</h4>";
+            divLista.innerHTML = "<h4>Agenda do dia:</h4>";
             const evs = eventosMes.filter(e => e.data === dataStr);
-            if(evs.length === 0) divLista.innerHTML += "<p><small>Nenhum.</small></p>";
-            
+            if(evs.length === 0) divLista.innerHTML += "<p><small>Nada marcado.</small></p>";
             evs.forEach(ev => {
                 divLista.innerHTML += `
-                <div style="background:#FFF; padding:10px; margin-bottom:5px; border-radius:5px; border-left:4px solid var(--cor-primaria); display:flex; justify-content:space-between">
+                <div style="background:#FFF; padding:8px; margin-bottom:5px; border-radius:5px; border-left:4px solid var(--cor-primaria); display:flex; justify-content:space-between; align-items:center">
                     <div><b>${ev.titulo}</b><br><small>${ev.ministerio}</small></div>
-                    <button onclick="apagarEvento(${ev.id})" style="color:red;border:none;background:none;cursor:pointer">🗑️</button>
+                    <button onclick="apagarEvento(${ev.id})" style="color:red;border:none;background:none;cursor:pointer;font-size:1.2rem">🗑️</button>
                 </div>`;
             });
         }
-
-        function fecharModalEvento() {
-            document.getElementById('modalEvento').style.display = 'none';
-        }
+        function fecharModalEvento() { document.getElementById('modalEvento').style.display = 'none'; }
 
         async function salvarEvento() {
             const titulo = document.getElementById('evTitulo').value;
             const data = document.getElementById('evData').value;
             const ministerio = document.getElementById('evMinisterio').value;
-            
             if(!titulo) return alert("Digite um título!");
-            
             const senha = prompt("🔒 Senha de Coordenador:");
             if(!senha) return;
-
-            const res = await fetch('/eventos', {
-                method: 'POST', headers: {'Content-Type':'application/json'},
-                body: JSON.stringify({ titulo, data, ministerio, senha })
-            });
-
-            if(res.ok) {
-                alert("Evento salvo!");
-                carregarEventosDoMes(); // Atualiza calendário
-                abrirModalEvento(data); // Reabre para ver o novo item
-            } else {
-                alert("Erro ou senha incorreta.");
-            }
+            const res = await fetch('/eventos', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ titulo, data, ministerio, senha }) });
+            if(res.ok) { alert("Salvo!"); carregarEventosDoMes(); abrirModalEvento(data); } else { alert("Erro/Senha"); }
         }
 
         async function apagarEvento(id) {
-            if(!confirm("Apagar este evento?")) return;
-            const senha = prompt("🔒 Senha:");
-            if(!senha) return;
-            
-            const res = await fetch(`/eventos/${id}`, {
-                method: 'DELETE', headers: {'Content-Type':'application/json'},
-                body: JSON.stringify({ senha })
-            });
-
-            if(res.ok) {
-                const dataAtual = document.getElementById('evData').value;
-                carregarEventosDoMes();
-                setTimeout(() => abrirModalEvento(dataAtual), 500); // Reabre modal atualizado
-            } else { alert("Erro ao apagar."); }
+            if(!confirm("Apagar?")) return;
+            const senha = prompt("🔒 Senha:"); if(!senha) return;
+            const res = await fetch(`/eventos/${id}`, { method: 'DELETE', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ senha }) });
+            if(res.ok) { const d = document.getElementById('evData').value; carregarEventosDoMes(); setTimeout(()=>abrirModalEvento(d),500); } else { alert("Erro"); }
         }
 
-
-        // --- LÓGICA ANTIGA (ESCALAS E SERVOS) MANTIDA IGUAL ---
+        // --- ESCALAS (CÓDIGO PADRÃO) ---
         async function carregarDadosIniciais() { try { const r=await fetch('/servos'); todosServos=await r.json(); }catch(e){} }
-        
         async function salvarNovoServo() {
-            const nome = document.getElementById('novoNome').value;
-            const min = document.getElementById('novoMinisterio').value;
+            const nome = document.getElementById('novoNome').value; const min = document.getElementById('novoMinisterio').value;
             if(!nome) return;
             await fetch('/servos', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({nome, ministerio:min}) });
             alert("Salvo!"); toggleArea('areaCadastro'); carregarDadosIniciais();
         }
-
         function filtrarListaPorMinisterio() {
-            const min = document.getElementById('selectMinisterio').value;
-            const cont = document.getElementById('containerChecklist');
-            cont.innerHTML = "";
+            const min = document.getElementById('selectMinisterio').value; const cont = document.getElementById('containerChecklist'); cont.innerHTML = "";
             if(!min) return;
             const lista = todosServos.filter(s => min==="Geral" ? true : s.ministerio && s.ministerio.includes(min));
             if(lista.length===0) cont.innerHTML="<p style='text-align:center'>Vazio</p>";
-            lista.forEach(s => {
-                cont.innerHTML += `<div class="checklist-item"><label style="display:flex;width:100%;align-items:center"><input type="checkbox" value="${s.id}" class="chk-servo"><span style="flex:1">${s.nome}</span><small>(${s.ministerio})</small></label></div>`;
-            });
+            lista.forEach(s => { cont.innerHTML += `<div class="checklist-item"><label style="display:flex;width:100%;align-items:center"><input type="checkbox" value="${s.id}" class="chk-servo"><span style="flex:1">${s.nome}</span><small>(${s.ministerio})</small></label></div>`; });
         }
-
         function marcarTodos(b) { document.querySelectorAll('.chk-servo').forEach(c=>c.checked=b); }
-
         document.getElementById('formEscala').onsubmit = async (e) => {
-            e.preventDefault();
-            const ids = Array.from(document.querySelectorAll('.chk-servo:checked')).map(c=>c.value);
+            e.preventDefault(); const ids = Array.from(document.querySelectorAll('.chk-servo:checked')).map(c=>c.value);
             if(ids.length===0) return alert("Selecione alguém!");
-            const senha = prompt("🔒 Senha:");
-            if(!senha) return;
-            const res = await fetch('/escalar-multiplo', {
-                method:'POST', headers:{'Content-Type':'application/json'},
-                body:JSON.stringify({servo_ids:ids, data:document.getElementById('dataEscala').value, ministerio_nome:document.getElementById('selectMinisterio').value, responsavel:document.getElementById('inputResponsavel').value, senha})
-            });
+            const senha = prompt("🔒 Senha:"); if(!senha) return;
+            const res = await fetch('/escalar-multiplo', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({servo_ids:ids, data:document.getElementById('dataEscala').value, ministerio_nome:document.getElementById('selectMinisterio').value, responsavel:document.getElementById('inputResponsavel').value, senha}) });
             const j = await res.json(); alert(res.ok?j.mensagem:j.erro);
             if(res.ok) { carregarEscalaDoDia(); marcarTodos(false); }
         };
-
         async function carregarEscalaDoDia() {
-            const data = document.getElementById('dataEscala').value;
-            if(!data) return;
+            const data = document.getElementById('dataEscala').value; if(!data) return;
             document.getElementById('dataTitulo').innerText = data.split('-').reverse().join('/');
-            const div = document.getElementById('listaEscalados');
-            div.innerHTML = "Carregando...";
-            const res = await fetch(`/escalas/${data}`);
-            const lista = await res.json();
-            div.innerHTML = "";
-            lista.forEach(i => {
-                div.innerHTML += `<div class="card-escala"><div><b>${i.servos?.nome}</b><br><small>${i.ministerio_nome}</small></div><button class="btn-acao" onclick="delEscala(${i.id})">❌</button></div>`;
-            });
+            const div = document.getElementById('listaEscalados'); div.innerHTML = "Carregando...";
+            const res = await fetch(`/escalas/${data}`); const lista = await res.json(); div.innerHTML = "";
+            lista.forEach(i => { div.innerHTML += `<div class="card-escala"><div><b>${i.servos?.nome}</b><br><small>${i.ministerio_nome}</small></div><button class="btn-acao" onclick="delEscala(${i.id})">❌</button></div>`; });
         }
-        
         async function delEscala(id) {
             const senha = prompt("Senha:"); if(!senha) return;
             const r = await fetch(`/escalas/${id}`, {method:'DELETE', headers:{'Content-Type':'application/json'}, body:JSON.stringify({senha})});
             if(r.ok) carregarEscalaDoDia(); else alert("Erro");
         }
-
-        // --- GERENCIAMENTO (CÓDIGO MANTIDO) ---
-        function carregarParaGerenciar() {
-            const div = document.getElementById('listaGerencia'); div.innerHTML="";
-            todosServos.forEach(s => div.innerHTML+=`<div style="display:flex;justify-content:space-between;padding:5px;border-bottom:1px solid #eee"><span>${s.nome}</span><button onclick="editarServo(${s.id},'${s.nome}','${s.ministerio}')">✏️</button></div>`);
-        }
-        async function editarServo(id,n,m) {
-            const nn = prompt("Nome:",n); const nm=prompt("Ministério:",m); const s=prompt("Senha:");
-            if(nn&&nm&&s) await fetch(`/servos/${id}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({nome:nn,ministerio:nm,senha:s})});
-            carregarDadosIniciais();
-        }
-
         function gerarImagem() {
             const area = document.getElementById('areaParaImagem');
             document.querySelectorAll('.btn-acao').forEach(b => b.style.display='none');
-            html2canvas(area).then(c => {
-                const a = document.createElement('a'); a.download='escala.jpg'; a.href=c.toDataURL(); a.click();
-                document.querySelectorAll('.btn-acao').forEach(b => b.style.display='block');
-            });
+            html2canvas(area).then(c => { const a = document.createElement('a'); a.download='escala.jpg'; a.href=c.toDataURL(); a.click(); document.querySelectorAll('.btn-acao').forEach(b => b.style.display='block'); });
         }
+        // --- GERENCIAR ---
+        function carregarParaGerenciar() { const div = document.getElementById('listaGerencia'); div.innerHTML=""; todosServos.forEach(s => div.innerHTML+=`<div style="display:flex;justify-content:space-between;padding:5px;border-bottom:1px solid #eee"><span>${s.nome}</span><button onclick="editarServo(${s.id},'${s.nome}','${s.ministerio}')">✏️</button></div>`); }
+        async function editarServo(id,n,m) { const nn = prompt("Nome:",n); const nm=prompt("Ministério:",m); const s=prompt("Senha:"); if(nn&&nm&&s) await fetch(`/servos/${id}`, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({nome:nn,ministerio:nm,senha:s})}); carregarDadosIniciais(); }
 
         window.onload = () => { carregarDadosIniciais(); };
     </script>

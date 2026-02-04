@@ -37,7 +37,12 @@
         .btn-mini { padding: 6px 12px; font-size: 0.8rem; background: #D7CCC8; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
         
         /* --- CALENDÁRIO --- */
-        #areaCalendarioPDF { background: white; padding: 10px; color: #000; width: 100%; }
+        #areaCalendarioPDF { 
+            background-color: #ffffff !important; /* FORÇA FUNDO BRANCO NO PDF */
+            padding: 10px; 
+            color: #000; 
+            width: 100%; 
+        }
 
         /* Logo invisível que só aparece no PDF */
         .logo-pdf { display: none; text-align: center; margin-bottom: 10px; }
@@ -54,7 +59,7 @@
         .grid-calendario { 
             display: grid; 
             grid-template-columns: repeat(7, 1fr); 
-            grid-auto-rows: 95px; /* Altura reduzida para caber no A4 sem cortar */
+            grid-auto-rows: 95px; /* Altura ideal para A4 */
             gap: 1px; 
             background: #D7CCC8; 
             border: 2px solid var(--cor-secundaria); 
@@ -74,10 +79,9 @@
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; display: block;
             line-height: 1.2;
         }
-        /* Cor para eventos pendentes (não salvos) */
         .pendente { background: var(--cor-aviso) !important; color: #3E2723 !important; }
 
-        /* Barra flutuante para salvar */
+        /* Barra flutuante */
         #barraSalvar {
             display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
             background: #3E2723; color: white; padding: 15px 30px; border-radius: 50px;
@@ -221,10 +225,9 @@
     <script>
         let todosServos = [];
         let eventosMes = [];
-        let filaPendentes = []; // LISTA TEMPORÁRIA
+        let filaPendentes = []; 
         let dataCalendario = new Date();
 
-        // --- SISTEMA DE ABAS ---
         function mudarAba(id, el) {
             document.querySelectorAll('.view-section').forEach(v => v.classList.remove('ativa'));
             document.getElementById(id).classList.add('ativa');
@@ -234,7 +237,6 @@
         }
         function toggleArea(id) { const el=document.getElementById(id); el.style.display=el.style.display==='block'?'none':'block'; }
 
-        // --- CALENDÁRIO ---
         async function carregarEventosDoMes() {
             try {
                 const res = await fetch('/eventos');
@@ -261,7 +263,6 @@
             for(let dia=1; dia<=ultimoDia; dia++) {
                 const dataFmt = `${ano}-${String(mes+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
                 
-                // Pega eventos salvos + eventos pendentes da fila
                 const salvos = eventosMes.filter(e => e.data === dataFmt);
                 const pendentes = filaPendentes.filter(e => e.data === dataFmt);
                 
@@ -280,30 +281,42 @@
 
         function mudarMes(d) { dataCalendario.setMonth(dataCalendario.getMonth()+d); carregarEventosDoMes(); }
 
-        // --- GERAR PDF (CORRIGIDO) ---
+        // --- GERAR PDF COM CORREÇÃO DE BRANCO ---
         function gerarPDFCalendario() {
-            const el = document.getElementById('areaCalendarioPDF');
-            
-            // Prepara para impressão: mostra logo, esconde botões
-            document.getElementById('logoPdfHeader').style.display = 'block';
-            document.querySelectorAll('.esconder-na-foto').forEach(b => b.style.display='none');
-            
+            const elemento = document.getElementById('areaCalendarioPDF');
+            const logo = document.getElementById('logoPdfHeader');
+            const botoes = document.querySelectorAll('.esconder-na-foto');
+
+            // 1. Mostra Logo / Esconde botões
+            logo.style.display = 'block';
+            botoes.forEach(b => b.style.display = 'none');
+
+            // 2. Configurações
             const opt = {
-                margin: 5,
-                filename: `Calendario_${document.getElementById('mesAnoDisplay').innerText}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+                margin:       5,
+                filename:     `Calendario_${document.getElementById('mesAnoDisplay').innerText}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, scrollY: 0 }, 
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
             };
 
-            html2pdf().set(opt).from(el).save().then(() => {
-                // Restaura visual
-                document.getElementById('logoPdfHeader').style.display = 'none';
-                document.querySelectorAll('.esconder-na-foto').forEach(b => b.style.display='inline-block');
-            });
+            // 3. Pequeno delay para garantir que o navegador "desenhou" a logo antes de tirar a foto
+            setTimeout(() => {
+                html2pdf().set(opt).from(elemento).save()
+                .then(() => {
+                    // SÓ RESTAURA DEPOIS QUE ACABAR
+                    logo.style.display = 'none';
+                    botoes.forEach(b => b.style.display = 'inline-block');
+                })
+                .catch(err => {
+                    alert("Erro ao gerar PDF.");
+                    logo.style.display = 'none';
+                    botoes.forEach(b => b.style.display = 'inline-block');
+                });
+            }, 200); // Espera 0.2 segundos
         }
 
-        // --- FILA DE EVENTOS (LOTE) ---
+        // --- FILA DE EVENTOS ---
         function abrirModalEvento(d) {
             document.getElementById('modalEvento').style.display='block';
             document.getElementById('evDataInicio').value = d;
@@ -313,11 +326,9 @@
             const div = document.getElementById('listaEventosDia');
             div.innerHTML = "<h4>Neste dia:</h4>";
             
-            // Mostra salvos
             const salvos = eventosMes.filter(e => e.data === d);
             salvos.forEach(ev => div.innerHTML += `<div style="padding:5px;border-bottom:1px solid #ddd;display:flex;justify-content:space-between"><span>${ev.titulo}</span><button onclick="apagarEvento(${ev.id})" style="color:red;border:none;cursor:pointer">🗑️</button></div>`);
             
-            // Mostra pendentes
             const pends = filaPendentes.filter(e => e.data === d);
             pends.forEach((ev, idx) => div.innerHTML += `<div style="padding:5px;background:#FFF9C4;display:flex;justify-content:space-between"><span>⏳ ${ev.titulo}</span><small>Pendente</small></div>`);
         }
@@ -328,32 +339,21 @@
             const ini = document.getElementById('evDataInicio').value;
             const fim = document.getElementById('evDataFim').value;
             const min = document.getElementById('evMinisterio').value;
-            
             if(!tit) return alert("Digite o título!");
 
             let tituloFinal = tit;
             if(min !== 'Geral') tituloFinal = `${tit} - ${min}`;
 
-            // Calcula dias
             let atual = new Date(ini); atual.setMinutes(atual.getMinutes()+atual.getTimezoneOffset());
             let limite = fim ? new Date(fim) : new Date(ini); limite.setMinutes(limite.getMinutes()+limite.getTimezoneOffset());
 
             if(limite < atual) return alert("Data final menor que início");
 
-            let count = 0;
             while(atual <= limite) {
-                filaPendentes.push({
-                    titulo: tituloFinal,
-                    data: atual.toISOString().split('T')[0],
-                    ministerio: min
-                });
+                filaPendentes.push({ titulo: tituloFinal, data: atual.toISOString().split('T')[0], ministerio: min });
                 atual.setDate(atual.getDate()+1);
-                count++;
             }
-
-            fecharModalEvento();
-            renderizarCalendario();
-            atualizarBarraSalvar();
+            fecharModalEvento(); renderizarCalendario(); atualizarBarraSalvar();
         }
 
         function atualizarBarraSalvar() {
@@ -372,22 +372,13 @@
             const senha = prompt(`Salvar ${filaPendentes.length} eventos?\n🔒 Digite a Senha:`);
             if(!senha) return;
 
-            // Envia um por um (simples e seguro)
             let erros = 0;
             for(const ev of filaPendentes) {
-                const res = await fetch('/eventos', {
-                    method: 'POST', headers:{'Content-Type':'application/json'},
-                    body: JSON.stringify({ ...ev, senha })
-                });
+                const res = await fetch('/eventos', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ ...ev, senha }) });
                 if(!res.ok) erros++;
             }
-
-            if(erros > 0) alert(`Atenção: ${erros} eventos falharam (senha incorreta?).`);
-            else alert("✅ Tudo Salvo!");
-
-            filaPendentes = []; // Limpa fila
-            atualizarBarraSalvar();
-            carregarEventosDoMes();
+            if(erros > 0) alert(`Atenção: ${erros} eventos falharam.`); else alert("✅ Tudo Salvo!");
+            filaPendentes = []; atualizarBarraSalvar(); carregarEventosDoMes();
         }
 
         async function apagarEvento(id) {
@@ -398,7 +389,7 @@
             else alert("Erro");
         }
 
-        // --- ESCALAS E GERAIS ---
+        // --- GERAIS ---
         async function carregarDadosIniciais(){try{const r=await fetch('/servos');todosServos=await r.json();}catch(e){}}
         async function salvarNovoServo(){const n=document.getElementById('novoNome').value;const m=document.getElementById('novoMinisterio').value;if(!n)return;await fetch('/servos',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nome:n,ministerio:m})});alert("Salvo!");toggleArea('areaCadastro');carregarDadosIniciais();}
         function filtrarListaPorMinisterio(){const m=document.getElementById('selectMinisterio').value;const c=document.getElementById('containerChecklist');c.innerHTML="";if(!m)return;const l=todosServos.filter(s=>m==="Geral"?true:s.ministerio&&s.ministerio.includes(m));if(l.length===0)c.innerHTML="<p style='text-align:center'>Vazio</p>";l.forEach(s=>{c.innerHTML+=`<div class="checklist-item"><label style='display:flex;width:100%'><input type='checkbox' value='${s.id}' class='chk-servo'><span style='flex:1'>${s.nome}</span><small>(${s.ministerio})</small></label></div>`})}
